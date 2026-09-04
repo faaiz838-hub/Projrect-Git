@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Settings</title>
+  <style>
+    :root {
+      --primary: #0284c7;
+      --primary-dark: #0369a1;
+      --primary-soft: #e0f2fe;
+      --bg: #f5f7fb;
+      --bg-strong: #edf5fe;
+      --panel: rgba(255,255,255,0.94);
+      --text: #0f172a;
+      --muted: #64748b;
+      --border: rgba(148, 163, 184, 0.22);
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --success: #16a34a;
+      --shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(14, 165, 233, 0.12), transparent 26%),
+        radial-gradient(circle at bottom right, rgba(14, 116, 144, 0.1), transparent 28%),
+        linear-gradient(180deg, #eff7ff 0%, #f8fbff 100%);
+      color: var(--text);
+    }
+    .admin-shell {
+      display: grid;
+      grid-template-columns: 240px 1fr;
+      min-height: 100vh;
+    }
+    .sidebar {
+      background: linear-gradient(180deg, rgba(7, 24, 39, 0.98), rgba(10, 19, 30, 0.96));
+      color: white;
+      padding: 24px 16px;
+      border-right: 1px solid rgba(148, 163, 184, 0.14);
+      box-shadow: inset -1px 0 0 rgba(148,163,184,0.08);
+    }
+    .brand {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 2px;
+      font-size: 1.32rem;
+      font-weight: 800;
+      margin-bottom: 26px;
+      padding: 0 10px 14px;
+      letter-spacing: 0.02em;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.14);
+      line-height: 1.08;
+      max-width: 148px;
+    }
+    .brand span { display: block; }
+    .nav { display: flex; flex-direction: column; gap: 8px; }
+    .nav a {
+      color: rgba(226, 232, 240, 0.95);
+      text-decoration: none;
+      padding: 12px 14px;
+      border-radius: 12px;
+      opacity: 0.9;
+      background: rgba(15, 23, 42, 0.35);
+      display: block;
+      border: 1px solid transparent;
+      font-size: 0.96rem;
+      line-height: 1.2;
+      font-weight: 700;
+      text-transform: none;
+      transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+    }
+    .nav a:hover {
+      transform: translateX(2px);
+      background: rgba(56, 189, 248, 0.06);
+      border-color: rgba(56, 189, 248, 0.25);
+    }
+    .nav a.active {
+      background: linear-gradient(90deg, rgba(2, 132, 199, 0.16), rgba(14, 116, 144, 0.08));
+      border-color: rgba(96, 165, 250, 0.42);
+      box-shadow: inset 0 0 0 1px rgba(125,211,252,0.15);
+      font-weight: 800;
+    }
+    .content {
+      padding: 28px 28px 32px;
+      background: linear-gradient(180deg, rgba(15, 23, 42, 0.02), rgba(15, 23, 42, 0.01));
+    }
+    .settings-shell {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .panel {
+      background: linear-gradient(180deg, rgba(255,255,255,0.96), rgba(248,250,252,0.94));
+      border: 1px solid rgba(148, 163, 184, 0.18);
+      border-radius: 20px;
+      padding: 22px 24px;
+      box-shadow: var(--shadow);
+      margin-bottom: 20px;
+      border-top: 4px solid rgba(2, 132, 199, 0.8);
+    }
+    .header-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 8px;
+    }
+    .settings-title-wrap {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .settings-icon-wrap {
+      width: 48px;
+      height: 48px;
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      color: #fff;
+      background: linear-gradient(135deg, #0f172a 0%, #0284c7 100%);
+      box-shadow: 0 14px 25px rgba(2, 132, 199, 0.25);
+      font-size: 1.2rem;
+    }
+    .eyebrow {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--muted);
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+    .settings-description {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.96rem;
+    }
+    h1, h2 { margin-top: 0; }
+    .settings-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+      gap: 18px;
+    }
+    .settings-card {
+      background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 18px 18px 16px;
+      box-shadow: 0 10px 22px rgba(15, 23, 42, 0.04);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      min-height: 100%;
+    }
+    .card-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .card-title-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .card-icon {
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      display: grid;
+      place-items: center;
+      background: var(--primary-soft);
+      color: var(--primary-dark);
+      font-size: 0.95rem;
+    }
+    .settings-card h3 {
+      margin: 0;
+      font-size: 1.12rem;
+      font-weight: 700;
+    }
+    .card-badge {
+      background: rgba(2, 132, 199, 0.12);
+      color: var(--primary-dark);
+      border: 1px solid rgba(2, 132, 199, 0.12);
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      border-radius: 999px;
+      padding: 6px 10px;
+      white-space: nowrap;
+    }
+    .card-copy {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.5;
+      font-size: 0.9rem;
+    }
+    .list-shell {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin: 0;
+      max-height: 215px;
+      overflow: auto;
+      padding-right: 2px;
+    }
+    .item-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 10px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: #fff;
+      color: var(--text);
+      min-height: 46px;
+    }
+    .item-row span {
+      overflow-wrap: anywhere;
+      font-size: 0.96rem;
+    }
+    .item-actions { display: flex; gap: 6px; }
+    .required-mark {
+      color: var(--danger);
+      margin-left: 4px;
+      font-weight: 700;
+    }
+    button {
+      border: none;
+      border-radius: 8px;
+      padding: 9px 12px;
+      background: var(--primary);
+      color: white;
+      cursor: pointer;
+      font-weight: 600;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+    button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 10px 18px rgba(2, 132, 199, 0.14);
+    }
+    button.secondary { background: #e2e8f0; color: var(--text); }
+    button.danger { background: var(--danger); }
+    .card-form, .module-form {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 2px;
+    }
+    .premium-input,
+    input {
+      flex: 1;
+      min-width: 120px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 0.95rem;
+      background: #fff;
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+    .premium-input:focus,
+    input:focus {
+      border-color: rgba(2, 132, 199, 0.65);
+      box-shadow: 0 0 0 4px rgba(2, 132, 199, 0.08);
+    }
+    .primary-btn {
+      background: linear-gradient(135deg, #0f172a 0%, #0284c7 100%);
+      color: #fff;
+      min-width: 120px;
+    }
+    .hidden { display: none; }
+    #erpToastContainer {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      z-index: 2000;
+      pointer-events: none;
+    }
+    .erp-toast {
+      min-width: 260px;
+      max-width: 360px;
+      padding: 12px 16px;
+      border-radius: 12px;
+      color: #fff;
+      font-weight: 700;
+      box-shadow: 0 12px 30px rgba(15, 23, 42, 0.18);
+      opacity: 0;
+      transform: translateX(18px);
+      transition: all 0.2s ease;
+      pointer-events: auto;
+    }
+    .erp-toast.visible { opacity: 1; transform: translateX(0); }
+    .erp-toast.success { background: linear-gradient(135deg, #166534, #22c55e); }
+    .erp-toast.error { background: linear-gradient(135deg, #991b1b, #ef4444); }
+    .erp-toast.warning { background: linear-gradient(135deg, #92400e, #f59e0b); }
+    .erp-toast.info { background: linear-gradient(135deg, #0369a1, #0284c7); }
+    .confirm-modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.66);
+      backdrop-filter: blur(4px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 2100;
+    }
+    .confirm-modal-backdrop.visible { display: flex; }
+    .confirm-modal {
+      background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(248,250,252,0.97));
+      border-radius: 18px;
+      width: min(420px, calc(100vw - 32px));
+      padding: 20px;
+      box-shadow: 0 32px 80px rgba(15, 23, 42, 0.22);
+      border: 1px solid rgba(148, 163, 184, 0.28);
+    }
+    .confirm-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px; }
+    .inline-edit-input {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid rgba(148,163,184,0.28);
+      margin-top: 8px;
+      font: inherit;
+      background: rgba(255,255,255,0.96);
+      box-shadow: inset 0 1px 1px rgba(15,23,42,0.03);
+    }
+    .inline-edit-input:focus {
+      outline: none;
+      border-color: rgba(2,132,199,0.75);
+      box-shadow: 0 0 0 4px rgba(14,165,233,0.12);
+    }
+    @media (max-width: 860px) {
+      .admin-shell { grid-template-columns: 1fr; }
+      .sidebar { padding-bottom: 12px; }
+      .content { padding: 16px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="admin-shell">
+    <aside class="sidebar" id="adminSidebar"></aside>
+
+    <main class="content">
+      <div class="settings-shell">
+        <header class="panel">
+          <div class="header-row">
+            <div class="settings-title-wrap">
+              <div class="settings-icon-wrap"><i class="fa-solid fa-sliders"></i></div>
+              <div>
+                <div class="eyebrow">Business configuration</div>
+                <h1>Business Settings</h1>
+              </div>
+            </div>
+          </div>
+          <p class="settings-description">Manage the master values that shape your products, operations, and customer experience.</p>
+        </header>
+
+        <div class="settings-grid">
+          <section class="settings-card footer-card">
+            <div class="card-head">
+              <div class="card-title-wrap">
+                <div class="card-icon"><i class="fa-solid fa-quote-left"></i></div>
+                <h3>Footer Tagline</h3>
+              </div>
+              <span class="card-badge">Live</span>
+            </div>
+            <p class="card-copy">Controls the premium business intro line shown to customers across the storefront.</p>
+            <form id="footerTaglineForm" class="card-form">
+              <input class="premium-input" type="text" id="footerTaglineInput" name="footerTagline" placeholder="Enter footer tagline" maxlength="220" />
+              <button class="primary-btn" type="submit">Save Tagline</button>
+            </form>
+          </section>
+
+          <section class="settings-card">
+            <div class="card-head">
+              <div class="card-title-wrap">
+                <div class="card-icon"><i class="fa-solid fa-tags"></i></div>
+                <h3>Categories</h3>
+              </div>
+              <span class="card-badge" id="category-count">0 items</span>
+            </div>
+            <p class="card-copy">Curate the categories available across your product catalogue and storefront.</p>
+            <div id="categoryList" class="list-shell"></div>
+            <form id="categoryForm" class="module-form">
+              <input class="premium-input" type="text" name="name" placeholder="Add category" required />
+              <button class="primary-btn" type="submit">Add</button>
+            </form>
+          </section>
+
+          <section class="settings-card">
+            <div class="card-head">
+              <div class="card-title-wrap">
+                <div class="card-icon"><i class="fa-solid fa-copyright"></i></div>
+                <h3>Brands</h3>
+              </div>
+              <span class="card-badge" id="brand-count">0 items</span>
+            </div>
+            <p class="card-copy">Keep the brand list aligned with your retail portfolio and product presentation.</p>
+            <div id="brandList" class="list-shell"></div>
+            <form id="brandForm" class="module-form">
+              <input class="premium-input" type="text" name="name" placeholder="Add brand" required />
+              <button class="primary-btn" type="submit">Add</button>
+            </form>
+          </section>
+
+          <section class="settings-card">
+            <div class="card-head">
+              <div class="card-title-wrap">
+                <div class="card-icon"><i class="fa-solid fa-cube"></i></div>
+                <h3>Pack Sizes</h3>
+              </div>
+              <span class="card-badge" id="pack-size-count">0 items</span>
+            </div>
+            <p class="card-copy">Track the standard pack sizes used across your product range and operational workflows.</p>
+            <div id="packSizeList" class="list-shell"></div>
+            <form id="packSizeForm" class="module-form">
+              <input class="premium-input" type="text" name="size" placeholder="Add pack size" required />
+              <button class="primary-btn" type="submit">Add</button>
+            </form>
+          </section>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <div id="erpToastContainer"></div>
+  <div id="confirmModalBackdrop" class="confirm-modal-backdrop" aria-hidden="true">
+    <div class="confirm-modal" role="dialog" aria-modal="true">
+      <h3 id="confirmModalTitle">Confirm Action</h3>
+      <p id="confirmModalText">Are you sure?</p>
+      <div class="confirm-actions">
+        <button type="button" class="secondary" id="confirmModalCancel">Cancel</button>
+        <button type="button" id="confirmModalConfirm">Confirm</button>
+      </div>
+    </div>
+  </div>
+  <div id="editModalBackdrop" class="confirm-modal-backdrop" aria-hidden="true">
+    <div class="confirm-modal" role="dialog" aria-modal="true">
+      <h3 id="editModalTitle">Edit Value</h3>
+      <label for="editModalInput" style="display:block; margin-top:12px; color:#475569; font-weight:600;">Update value</label>
+      <input id="editModalInput" class="inline-edit-input" type="text" />
+      <div class="confirm-actions">
+        <button type="button" class="secondary" id="editModalCancel">Cancel</button>
+        <button type="button" id="editModalSave">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/admin/sidebar.js"></script>
+  <script>
+    function showToast(message, type = 'success') {
+      const container = document.getElementById('erpToastContainer');
+      const toast = document.createElement('div');
+      toast.className = `erp-toast visible ${type}`;
+      toast.textContent = message;
+      container.appendChild(toast);
+      setTimeout(() => toast.classList.add('visible'), 20);
+      setTimeout(() => {
+        toast.classList.remove('visible');
+        setTimeout(() => toast.remove(), 200);
+      }, 3000);
+    }
+
+    function showConfirmDialog(message, onConfirm) {
+      const backdrop = document.getElementById('confirmModalBackdrop');
+      const text = document.getElementById('confirmModalText');
+      const title = document.getElementById('confirmModalTitle');
+      title.textContent = 'Confirm Action';
+      text.textContent = message;
+      backdrop.classList.add('visible');
+      backdrop.dataset.action = 'open';
+      const handleConfirm = () => {
+        backdrop.classList.remove('visible');
+        document.getElementById('confirmModalConfirm').removeEventListener('click', handleConfirm);
+        document.getElementById('confirmModalCancel').removeEventListener('click', handleCancel);
+        onConfirm();
+      };
+      const handleCancel = () => {
+        backdrop.classList.remove('visible');
+        document.getElementById('confirmModalConfirm').removeEventListener('click', handleConfirm);
+        document.getElementById('confirmModalCancel').removeEventListener('click', handleCancel);
+      };
+      document.getElementById('confirmModalConfirm').addEventListener('click', handleConfirm);
+      document.getElementById('confirmModalCancel').addEventListener('click', handleCancel);
+      backdrop.addEventListener('click', (event) => {
+        if (event.target.id === 'confirmModalBackdrop') {
+          handleCancel();
+        }
+      }, { once: true });
+    }
+
+    function showEditDialog(currentValue, onSave) {
+      const backdrop = document.getElementById('editModalBackdrop');
+      const input = document.getElementById('editModalInput');
+      input.value = currentValue || '';
+      backdrop.classList.add('visible');
+      const handleSave = () => {
+        const value = input.value.trim();
+        if (!value) {
+          showToast('Value cannot be empty.', 'warning');
+          return;
+        }
+        backdrop.classList.remove('visible');
+        document.getElementById('editModalSave').removeEventListener('click', handleSave);
+        document.getElementById('editModalCancel').removeEventListener('click', handleCancel);
+        onSave(value);
+      };
+      const handleCancel = () => {
+        backdrop.classList.remove('visible');
+        document.getElementById('editModalSave').removeEventListener('click', handleSave);
+        document.getElementById('editModalCancel').removeEventListener('click', handleCancel);
+      };
+      document.getElementById('editModalSave').addEventListener('click', handleSave);
+      document.getElementById('editModalCancel').addEventListener('click', handleCancel);
+      backdrop.addEventListener('click', (event) => {
+        if (event.target.id === 'editModalBackdrop') {
+          handleCancel();
+        }
+      }, { once: true });
+      input.focus();
+      input.select();
+    }
+
+    const categoryList = document.getElementById('categoryList');
+    const brandList = document.getElementById('brandList');
+    const packSizeList = document.getElementById('packSizeList');
+
+    async function ensureAdminSession() {
+      const response = await fetch('/api/admin/me');
+      const data = await response.json();
+      if (!response.ok || !data.authenticated) {
+        window.location.href = '/admin/login.html';
+        return false;
+      }
+      return true;
+    }
+
+    function renderList(container, items, type) {
+      if (!container) return;
+      if (!items.length) {
+        container.innerHTML = '<div class="item-row"><span>No entries yet</span></div>';
+        return;
+      }
+
+      container.innerHTML = items.map((item) => `
+        <div class="item-row" data-id="${item.id}">
+          <span>${type === 'pack_size' ? item.size : item.name}</span>
+          <div class="item-actions">
+            <button class="secondary" type="button" data-action="edit" data-type="${type}" data-id="${item.id}" data-value="${type === 'pack_size' ? item.size : item.name}">Edit</button>
+            <button class="danger" type="button" data-action="delete" data-type="${type}" data-id="${item.id}">Delete</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    async function loadSettings() {
+      const response = await fetch('/api/settings/metadata', { headers: { 'Content-Type': 'application/json' } });
+      if (response.status === 401) {
+        window.location.href = '/admin/login.html';
+        return;
+      }
+      const data = await response.json();
+      renderList(categoryList, data.categories || [], 'category');
+      renderList(brandList, data.brands || [], 'brand');
+      renderList(packSizeList, data.pack_sizes || [], 'pack_size');
+
+      const categoryCount = document.getElementById('category-count');
+      const brandCount = document.getElementById('brand-count');
+      const packSizeCount = document.getElementById('pack-size-count');
+      categoryCount.textContent = `${(data.categories || []).length} item${(data.categories || []).length === 1 ? '' : 's'}`;
+      brandCount.textContent = `${(data.brands || []).length} item${(data.brands || []).length === 1 ? '' : 's'}`;
+      packSizeCount.textContent = `${(data.pack_sizes || []).length} item${(data.pack_sizes || []).length === 1 ? '' : 's'}`;
+
+      const companyResponse = await fetch('/api/company-settings', { headers: { 'Content-Type': 'application/json' } });
+      if (companyResponse.ok) {
+        const companyData = await companyResponse.json();
+        const company = companyData.company || {};
+        const value = company.footer_tagline || 'Your trusted destination for premium essentials, dependable delivery, and a refined shopping experience.';
+        document.getElementById('footerTaglineInput').value = value;
+      }
+    }
+
+    async function saveSetting(type, value, id = null) {
+      const endpoint = (() => {
+        if (type === 'category') return '/api/settings/categories';
+        if (type === 'brand') return '/api/settings/brands';
+        return '/api/settings/pack-sizes';
+      })();
+
+      const method = id ? 'PUT' : 'POST';
+      const url = id ? `${endpoint}/${id}` : endpoint;
+      const payload = type === 'pack_size' ? { size: value } : { name: value };
+
+      const response = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) {
+        const result = await response.json().catch(() => ({}));
+        showToast(result.error || 'Unable to save item.', 'error');
+        return;
+      }
+
+      showToast('Setting saved successfully.', 'success');
+      loadSettings();
+    }
+
+    async function deleteSetting(type, id) {
+      const endpoint = (() => {
+        if (type === 'category') return '/api/settings/categories';
+        if (type === 'brand') return '/api/settings/brands';
+        return '/api/settings/pack-sizes';
+      })();
+
+      showConfirmDialog('Delete this setting?', async () => {
+        const response = await fetch(`${endpoint}/${id}`, { method: 'DELETE' });
+        if (!response.ok) {
+          showToast('Unable to delete item.', 'error');
+          return;
+        }
+        showToast('Setting removed successfully.', 'success');
+        loadSettings();
+      });
+    }
+
+    document.getElementById('footerTaglineForm').addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const value = (document.getElementById('footerTaglineInput').value || '').trim();
+      if (!value) {
+        showToast('Footer tagline cannot be empty.', 'warning');
+        return;
+      }
+
+      const companyResponse = await fetch('/api/company-settings');
+      const companyData = await companyResponse.json().catch(() => ({}));
+      const company = companyData.company || {};
+
+      const response = await fetch('/api/company-settings', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...company, footer_tagline: value })
+      });
+
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        showToast(result.error || 'Unable to save footer tagline.', 'error');
+        return;
+      }
+
+      showToast('Footer tagline saved successfully.', 'success');
+      document.getElementById('footerTaglineInput').value = value;
+    });
+
+    document.getElementById('categoryForm').addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const form = event.currentTarget;
+      const value = (form.elements.name.value || '').trim();
+      if (!value) return;
+      await saveSetting('category', value);
+      form.reset();
+    });
+
+    document.getElementById('brandForm').addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const form = event.currentTarget;
+      const value = (form.elements.name.value || '').trim();
+      if (!value) return;
+      await saveSetting('brand', value);
+      form.reset();
+    });
+
+    document.getElementById('packSizeForm').addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const form = event.currentTarget;
+      const value = (form.elements.size.value || '').trim();
+      if (!value) return;
+      await saveSetting('pack_size', value);
+      form.reset();
+    });
+
+    document.addEventListener('click', async (event) => {
+      const button = event.target.closest('button');
+      if (!button) return;
+      const { action, type, id, value } = button.dataset;
+
+      if (action === 'delete') {
+        deleteSetting(type, Number(id));
+      }
+
+      if (action === 'edit') {
+        showEditDialog(value || '', async (nextValue) => {
+          await saveSetting(type, nextValue, Number(id));
+        });
+      }
+    });
+
+    ensureAdminSession().then((ok) => {
+      if (ok) loadSettings();
+    });
+  </script>
+</body>
+</html>

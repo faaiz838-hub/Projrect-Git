@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>User Management</title>
+  <link rel="stylesheet" href="/admin/sidebar.css" />
+  <style>
+    body { margin: 0; font-family: Arial, sans-serif; color: #172033; background: #f5f7fa; }
+    .layout { display: grid; grid-template-columns: 240px 1fr; min-height: 100vh; } .content { padding: 28px; }
+    h1 { margin-top: 0; } .panel { max-width: 960px; padding: 20px; background: #fff; border: 1px solid #dbe2ea; border-radius: 8px; }
+    form { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-bottom: 22px; } input, select, button { padding: 10px; border: 1px solid #cbd5e1; border-radius: 5px; } button { background: #0f766e; color: #fff; border: 0; font-weight: 700; cursor: pointer; } table { width: 100%; border-collapse: collapse; } th, td { padding: 10px; text-align: left; border-top: 1px solid #e2e8f0; } .error { color: #b91c1c; }
+    @media (max-width: 760px) { .layout { grid-template-columns: 1fr; } form { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <div class="layout"><aside id="adminSidebar" class="sidebar"></aside><main class="content"><h1>Users</h1><section class="panel">
+    <form id="createUserForm"><input name="display_name" placeholder="Full name" required /><input name="email" type="email" placeholder="Email" required /><input name="password" type="password" minlength="12" placeholder="Password (12+ characters)" required /><select name="role"><option>Cashier</option><option>WarehouseStaff</option><option>Accountant</option><option>Manager</option><option>Owner</option></select><button>Create user</button></form>
+    <p id="message" class="error"></p><table><thead><tr><th>Name</th><th>Email</th><th>Role</th><th>2FA</th><th>Status</th></tr></thead><tbody id="users"></tbody></table>
+  </section></main></div>
+  <script src="/admin/sidebar.js"></script><script>
+    const message = document.getElementById('message'); const users = document.getElementById('users');
+    async function loadUsers() { const response = await fetch('/api/admin/users'); const data = await response.json(); if (!response.ok) { message.textContent = data.error || 'Unable to load users.'; return; } users.innerHTML = data.users.map((user) => `<tr><td>${user.display_name}</td><td>${user.email}</td><td>${user.role}</td><td>${user.totp_enabled ? 'Enabled' : 'Not enrolled'}</td><td>${user.active ? 'Active' : 'Inactive'}</td></tr>`).join(''); }
+    document.getElementById('createUserForm').addEventListener('submit', async (event) => { event.preventDefault(); message.textContent = ''; const form = new FormData(event.target); const response = await fetch('/api/admin/users', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(Object.fromEntries(form)) }); const data = await response.json(); if (!response.ok) { message.textContent = data.error || 'Unable to create user.'; return; } event.target.reset(); loadUsers(); });
+    loadUsers();
+  </script>
+</body>
+</html>

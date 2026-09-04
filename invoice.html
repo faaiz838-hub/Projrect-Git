@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Business Name | Invoice</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f8fafc;
+      color: #0f172a;
+    }
+    .wrap {
+      max-width: 900px;
+      margin: 40px auto;
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 18px;
+      box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+      padding: 30px;
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      gap: 20px;
+      border-bottom: 1px solid #e2e8f0;
+      padding-bottom: 18px;
+      margin-bottom: 20px;
+    }
+    h1 { margin: 0 0 6px; font-size: 2rem; }
+    .muted { color: #64748b; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    th, td {
+      text-align: left;
+      padding: 12px 10px;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    th {
+      background: #f8fafc;
+    }
+    .totals {
+      margin-top: 16px;
+      width: 320px;
+      margin-left: auto;
+    }
+    .row {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    .alert {
+      padding: 12px 16px;
+      border-radius: 10px;
+      background: #ecfeff;
+      color: #0f766e;
+      margin-bottom: 18px;
+      font-weight: 600;
+    }
+    .form {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    input, button {
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid #cbd5e1;
+      font-size: 0.95rem;
+    }
+    button {
+      background: #0284c7;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      font-weight: 700;
+    }
+    .ledger {
+      margin-top: 20px;
+    }
+    .badge {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 999px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      background: #dcfce7;
+      color: #166534;
+    }
+    .badge.partial { background: #fef3c7; color: #92400e; }
+    .badge.unpaid { background: #fee2e2; color: #991b1b; }
+    .toast-stack {
+      position: fixed;
+      top: 18px;
+      right: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      z-index: 1100;
+    }
+    .toast-item {
+      min-width: 240px;
+      max-width: 340px;
+      padding: 12px 14px;
+      border-radius: 10px;
+      color: #fff;
+      font-weight: 700;
+      box-shadow: 0 12px 28px rgba(15, 23, 42, 0.18);
+      opacity: 0;
+      transform: translateX(16px);
+      transition: all 0.2s ease;
+    }
+    .toast-item.visible { opacity: 1; transform: translateX(0); }
+    .toast-item.success { background: linear-gradient(135deg, #166534, #22c55e); }
+    .toast-item.error { background: linear-gradient(135deg, #991b1b, #ef4444); }
+    .toast-item.warning { background: linear-gradient(135deg, #92400e, #f59e0b); }
+  </style>
+</head>
+<body>
+  <div id="invoiceToastStack" class="toast-stack"></div>
+
+  <div class="wrap">
+    <div class="alert">Enter your order number and email to view your invoice and payment history.</div>
+
+    <div class="form">
+      <input id="orderNumber" type="text" placeholder="Order number" />
+      <input id="customerEmail" type="email" placeholder="Email address" />
+      <button id="lookupBtn" type="button">View Invoice</button>
+    </div>
+
+    <div id="invoiceView" style="display:none;">
+      <div class="header">
+        <div>
+          <h1>Invoice</h1>
+          <div id="invoiceNumber" class="muted"></div>
+        </div>
+        <div>
+          <div><strong>Business Name</strong></div>
+          <div class="muted">Customer support</div>
+        </div>
+      </div>
+
+      <div class="header" style="border-bottom:none; margin-bottom:0;">
+        <div>
+          <div><strong>Order:</strong> <span id="orderNumberDisplay"></span></div>
+          <div><strong>Customer:</strong> <span id="customerName"></span></div>
+          <div><strong>Email:</strong> <span id="customerEmailDisplay"></span></div>
+          <div><strong>Address:</strong> <span id="deliveryAddress"></span></div>
+        </div>
+        <div>
+          <div><strong>Date:</strong> <span id="invoiceDate"></span></div>
+          <div><strong>Status:</strong> <span id="paymentStatus" class="badge"></span></div>
+        </div>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Item</th>
+            <th>Qty</th>
+            <th>Unit price</th>
+            <th>Total</th>
+          </tr>
+        </thead>
+        <tbody id="itemsBody"></tbody>
+      </table>
+
+      <div class="totals">
+        <div class="row"><span>Subtotal</span><span id="subtotal"></span></div>
+        <div class="row"><span>Tax</span><span id="tax"></span></div>
+        <div class="row"><strong>Total</strong><strong id="total"></strong></div>
+        <div class="row"><span>Paid</span><span id="paidAmount"></span></div>
+        <div class="row"><span>Balance</span><span id="balanceAmount"></span></div>
+      </div>
+
+      <div class="ledger">
+        <h3>Payment History Ledger</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Method</th>
+              <th>Reference</th>
+              <th>Amount</th>
+              <th>Balance</th>
+            </tr>
+          </thead>
+          <tbody id="ledgerBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function showToast(message, type = 'success') {
+      const stack = document.getElementById('invoiceToastStack');
+      const toast = document.createElement('div');
+      toast.className = `toast-item ${type}`;
+      toast.textContent = message;
+      stack.appendChild(toast);
+      setTimeout(() => toast.classList.add('visible'), 20);
+      setTimeout(() => {
+        toast.classList.remove('visible');
+        setTimeout(() => toast.remove(), 200);
+      }, 3000);
+    }
+
+    const lookupBtn = document.getElementById('lookupBtn');
+    const invoiceView = document.getElementById('invoiceView');
+
+    lookupBtn.addEventListener('click', async () => {
+      const orderNumber = document.getElementById('orderNumber').value.trim();
+      const email = document.getElementById('customerEmail').value.trim();
+      if (!orderNumber || !email) {
+        showToast('Please enter both your order number and email.', 'warning');
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/invoice/public?order_number=${encodeURIComponent(orderNumber)}&email=${encodeURIComponent(email)}`);
+        const data = await response.json();
+        if (!response.ok) {
+          throw new Error(data.error || 'Invoice not found');
+        }
+
+        const invoice = data.invoice;
+        const order = data.order;
+        const items = data.items || [];
+        const ledger = data.ledger || [];
+
+        document.getElementById('invoiceNumber').textContent = invoice.invoice_number;
+        document.getElementById('orderNumberDisplay').textContent = order.order_number;
+        document.getElementById('customerName').textContent = order.customer_name || 'Walk-in Customer';
+        document.getElementById('customerEmailDisplay').textContent = order.email || '—';
+        document.getElementById('deliveryAddress').textContent = order.delivery_address || '—';
+        document.getElementById('invoiceDate').textContent = new Date(invoice.invoice_date).toLocaleString();
+
+        const statusEl = document.getElementById('paymentStatus');
+        statusEl.textContent = invoice.payment_status || 'Unpaid';
+        statusEl.className = `badge ${String(invoice.payment_status || 'Unpaid').toLowerCase().replace(/\s+/g, '')}`;
+
+        document.getElementById('subtotal').textContent = `£${Number(invoice.subtotal || 0).toFixed(2)}`;
+        document.getElementById('tax').textContent = `£${Number(invoice.tax || 0).toFixed(2)}`;
+        document.getElementById('total').textContent = `£${Number(invoice.total || 0).toFixed(2)}`;
+        document.getElementById('paidAmount').textContent = `£${Number(invoice.paid_amount || 0).toFixed(2)}`;
+        document.getElementById('balanceAmount').textContent = `£${(Number(invoice.total || 0) - Number(invoice.paid_amount || 0)).toFixed(2)}`;
+
+        const rowsHtml = (items || []).map((item) => `
+          <tr>
+            <td>${item.product_name || 'Product'}</td>
+            <td>${item.quantity}</td>
+            <td>£${Number(item.unit_price || 0).toFixed(2)}</td>
+            <td>£${Number(item.line_total || 0).toFixed(2)}</td>
+          </tr>
+        `).join('');
+        document.getElementById('itemsBody').innerHTML = rowsHtml;
+
+        const ledgerHtml = (ledger || []).map((entry) => `
+          <tr>
+            <td>${new Date(entry.entry_date).toLocaleString()}</td>
+            <td>${entry.payment_method || 'Cash'}</td>
+            <td>${entry.payment_reference || '—'}</td>
+            <td>£${Number(entry.amount || 0).toFixed(2)}</td>
+            <td>£${Number(entry.balance || 0).toFixed(2)}</td>
+          </tr>
+        `).join('');
+        document.getElementById('ledgerBody').innerHTML = ledgerHtml || '<tr><td colspan="5" class="muted">No payment history yet.</td></tr>';
+
+        invoiceView.style.display = 'block';
+      } catch (error) {
+        showToast(error.message || 'Unable to load invoice.', 'error');
+      }
+    });
+  </script>
+</body>
+</html>

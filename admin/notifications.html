@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Notification Settings</title>
+  <link rel="stylesheet" href="/admin/sidebar.css">
+  <style>
+    :root { --ink:#172033; --muted:#607086; --border:#dbe3ed; --page:#f3f6fa; --panel:#fff; --primary:#0f766e; --danger:#b42318; }
+    * { box-sizing:border-box; } body { margin:0; font-family:"Segoe UI",sans-serif; color:var(--ink); background:var(--page); }
+    .layout { display:grid; grid-template-columns:240px minmax(0,1fr); min-height:100vh; } .content { max-width:1050px; padding:30px; }
+    h1 { margin:0 0 6px; } .intro { color:var(--muted); margin:0 0 22px; } .status { min-height:22px; font-weight:600; color:var(--primary); } .status.error { color:var(--danger); }
+    .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:16px; } .card { background:var(--panel); border:1px solid var(--border); border-radius:8px; padding:18px; }
+    .card h2 { font-size:1.05rem; margin:0 0 12px; } label { display:block; color:var(--muted); font-size:.88rem; margin:12px 0 5px; } input { width:100%; border:1px solid var(--border); border-radius:5px; padding:10px; font:inherit; }
+    .toggle { display:flex; align-items:center; gap:8px; color:var(--ink); font-weight:600; } .toggle input { width:auto; } button { margin-top:20px; border:0; border-radius:5px; padding:11px 16px; background:var(--primary); color:#fff; font:inherit; font-weight:700; cursor:pointer; } button:disabled { opacity:.65; cursor:wait; }
+    .hint { color:var(--muted); font-size:.82rem; margin:5px 0 0; } @media (max-width:760px) { .layout { grid-template-columns:1fr; } .content { padding:20px; } }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <aside id="adminSidebar" class="sidebar"></aside>
+    <main class="content">
+      <h1>Notifications</h1>
+      <p class="intro">Set internal recipients and choose which operational alerts this installation sends. Separate email addresses with commas.</p>
+      <p id="status" class="status" role="status"></p>
+      <form id="settingsForm">
+        <div class="grid">
+          <section class="card"><h2>Low Stock Alerts</h2><label class="toggle"><input type="checkbox" name="low_stock_enabled"> Enable</label><label>Email recipients</label><input name="low_stock_emails" type="text" placeholder="stock@example.com, owner@example.com"><label>SMS recipient</label><input name="low_stock_sms_phone" type="tel" placeholder="Optional; requires Twilio"></section>
+          <section class="card"><h2>New Complaint Alerts</h2><label class="toggle"><input type="checkbox" name="complaint_enabled"> Enable</label><label>Email recipients</label><input name="complaint_emails" type="text" placeholder="support@example.com"><label>SMS recipient</label><input name="complaint_sms_phone" type="tel" placeholder="Optional; requires Twilio"></section>
+          <section class="card"><h2>Contact Request Alerts</h2><label class="toggle"><input type="checkbox" name="contact_request_enabled"> Enable</label><label>Email recipients</label><input name="contact_request_emails" type="text" placeholder="sales@example.com"><label>SMS recipient</label><input name="contact_request_sms_phone" type="tel" placeholder="Optional; requires Twilio"></section>
+          <section class="card"><h2>Internal Dispatch Alerts</h2><label class="toggle"><input type="checkbox" name="dispatch_internal_enabled"> Enable</label><label>Email recipients</label><input name="dispatch_internal_emails" type="text" placeholder="warehouse@example.com"><label>SMS recipient</label><input name="dispatch_internal_sms_phone" type="tel" placeholder="Optional; requires Twilio"><p class="hint">Customer dispatch notifications are unchanged.</p></section>
+        </div>
+        <button id="save" type="submit">Save Notification Settings</button>
+      </form>
+    </main>
+  </div>
+  <script src="/admin/sidebar.js"></script>
+  <script>
+    const form = document.getElementById('settingsForm');
+    const status = document.getElementById('status');
+    const saveButton = document.getElementById('save');
+    function show(message, error = false) { status.textContent = message; status.className = error ? 'status error' : 'status'; }
+    async function request(url, options) { const response = await fetch(url, options); const data = await response.json().catch(() => ({})); if (!response.ok) throw new Error(data.error || 'Unable to complete the request.'); return data; }
+    async function load() { try { const data = await request('/api/admin/notification-settings'); const settings = data.settings || {}; for (const element of form.elements) { if (!element.name) continue; element.checked !== undefined && element.type === 'checkbox' ? element.checked = Boolean(Number(settings[element.name])) : element.value = settings[element.name] || ''; } } catch (error) { show(error.message, true); } }
+    form.addEventListener('submit', async (event) => { event.preventDefault(); const payload = {}; for (const element of form.elements) { if (!element.name) continue; payload[element.name] = element.type === 'checkbox' ? element.checked : element.value; } saveButton.disabled = true; show('Saving...'); try { await request('/api/admin/notification-settings', { method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) }); show('Notification settings saved.'); } catch (error) { show(error.message, true); } finally { saveButton.disabled = false; } });
+    load();
+  </script>
+</body>
+</html>

@@ -1,0 +1,13 @@
+.env
+node_modules/
+.env
+*.log
+cookiejar.txt
+cookies.txt
+login.json
+login-response.json
+products-auth.json
+*.db
+*.db-shm
+*.db-wal
+*.log

@@ -1,0 +1,1092 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Accounts</title>
+  <style>
+    :root {
+      --primary: #0284c7;
+      --primary-dark: #0369a1;
+      --primary-soft: rgba(2, 132, 199, 0.1);
+      --bg: #f5f7fb;
+      --panel: rgba(255,255,255,0.96);
+      --ink: #0f172a;
+      --muted: #64748b;
+      --border: rgba(148,163,184,0.22);
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --success: #16a34a;
+      --info: #2563eb;
+      --shadow: 0 18px 40px rgba(15,23,42,0.08);
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(14, 165, 233, 0.12), transparent 26%),
+        radial-gradient(circle at bottom right, rgba(14, 116, 144, 0.1), transparent 28%),
+        var(--bg);
+      color: var(--ink);
+    }
+    .admin-shell {
+      display: grid;
+      grid-template-columns: 240px 1fr;
+      min-height: 100vh;
+    }
+    .sidebar {
+      background: linear-gradient(180deg, rgba(7,24,39,0.98), rgba(10,19,30,0.96));
+      color: white;
+      padding: 24px 16px;
+      border-right: 1px solid rgba(148,163,184,0.14);
+      box-shadow: inset -1px 0 0 rgba(148,163,184,0.08);
+    }
+    .brand {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 2px;
+      font-size: 1.32rem;
+      font-weight: 800;
+      margin-bottom: 26px;
+      padding: 0 10px 14px;
+      border-bottom: 1px solid rgba(148,163,184,0.14);
+      letter-spacing: 0.02em;
+      line-height: 1.08;
+      max-width: 148px;
+    }
+    .brand span { display: block; }
+    .nav { display: flex; flex-direction: column; gap: 8px; }
+    .nav a {
+      color: rgba(226,232,240,0.95);
+      text-decoration: none;
+      padding: 12px 14px;
+      border-radius: 12px;
+      opacity: 0.9;
+      display: block;
+      background: rgba(15,23,42,0.35);
+      border: 1px solid transparent;
+      font-size: 0.96rem;
+      line-height: 1.2;
+      font-weight: 700;
+      transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+    }
+    .nav a:hover {
+      transform: translateX(2px);
+      background: rgba(13,148,136,0.08);
+      border-color: rgba(45,212,191,0.28);
+    }
+    .nav a.active {
+      background: linear-gradient(90deg, rgba(15,118,110,0.16), rgba(14,116,144,0.08));
+      border-color: rgba(45,212,191,0.42);
+      box-shadow: inset 0 0 0 1px rgba(153,246,228,0.15);
+      font-weight: 800;
+    }
+    .nav-group {
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid rgba(148,163,184,0.14);
+    }
+    .nav-group-label {
+      position: relative;
+      margin: 0 10px 8px;
+      color: rgba(148,163,184,0.9);
+      font-size: 0.7rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      font-weight: 800;
+      background: transparent;
+    }
+    .nav-group-label::before {
+      content: none !important;
+      display: none !important;
+      width: 0 !important;
+      height: 0 !important;
+    }
+    .nav-group-items { display: flex; flex-direction: column; gap: 8px; }
+
+    .content {
+      padding: 28px 28px 32px;
+      background: linear-gradient(180deg, rgba(15,23,42,0.02), rgba(15,23,42,0.01));
+    }
+    .shell { max-width: 1280px; margin: 0 auto; }
+    .topbar {
+      display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap;
+      margin-bottom: 18px;
+      padding: 18px 20px;
+      border-radius: 18px;
+      background: linear-gradient(135deg, rgba(255,255,255,0.96), rgba(240,249,255,0.82));
+      border: 1px solid rgba(148,163,184,0.18);
+      box-shadow: 0 14px 28px rgba(15,23,42,0.06);
+    }
+    .eyebrow {
+      font-size: 0.72rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      font-weight: 800;
+      margin-bottom: 6px;
+    }
+    h1, h2, h3, p { margin: 0; }
+    .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+    button {
+      border: none; border-radius: 10px; padding: 10px 14px; font-weight: 700; cursor: pointer; background: var(--primary); color: white;
+    }
+    button.secondary { background: #e2e8f0; color: var(--ink); }
+    button.warning { background: var(--warning); }
+    button.success { background: var(--success); }
+    button.info { background: var(--info); }
+    .tab-bar {
+      display: flex; gap: 8px; flex-wrap: wrap; margin: 18px 0 16px;
+    }
+    .tab {
+      background: #e2e8f0; color: var(--ink); border: 1px solid transparent; border-radius: 10px; padding: 10px 14px; font-weight: 700; cursor: pointer;
+    }
+    .tab.active {
+      background: var(--primary); color: white; border-color: var(--primary); box-shadow: 0 12px 22px rgba(2,132,199,0.18);
+    }
+    .panel {
+      background: linear-gradient(180deg, rgba(255,255,255,0.96), rgba(248,250,252,0.94));
+      border: 1px solid rgba(148,163,184,0.18);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+      padding: 18px;
+      margin-top: 18px;
+    }
+    .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin-bottom: 18px; }
+    .metric {
+      position: relative;
+      background: linear-gradient(135deg, rgba(255,255,255,0.98), rgba(239,246,255,0.94));
+      border: 1px solid rgba(148,163,184,0.22);
+      border-radius: 16px;
+      padding: 14px 16px 15px;
+      min-height: 94px;
+      box-shadow: 0 12px 24px rgba(15,23,42,0.05), inset 0 1px 0 rgba(255,255,255,0.9);
+      overflow: hidden;
+    }
+    .metric::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 4px;
+      background: linear-gradient(90deg, #0ea5e9, #0f766e, #60a5fa);
+      opacity: 0.92;
+    }
+    .metric-label { color: var(--muted); font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.09em; font-weight: 800; }
+    .metric-value { font-size: clamp(1.35rem, 2vw, 1.72rem); font-weight: 800; margin-top: 10px; letter-spacing: -0.03em; }
+    .filter-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      font-size: 0.8rem;
+      color: var(--muted);
+      font-weight: 700;
+    }
+    .field input, .field select, .field textarea {
+      width: 100%;
+      border: 1px solid rgba(148,163,184,0.26);
+      border-radius: 10px;
+      padding: 10px 12px;
+      font: inherit;
+      background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(248,250,252,0.96));
+      color: var(--ink);
+    }
+    table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      background: rgba(255,255,255,0.7);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.6), 0 10px 22px rgba(15,23,42,0.04);
+    }
+    th, td {
+      text-align: left;
+      padding: 12px 10px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+      font-size: 0.93rem;
+      color: var(--ink);
+    }
+    th {
+      background: linear-gradient(180deg, #f8fafc 0%, #edf4ff 100%);
+      font-size: 0.72rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #475569;
+      font-weight: 800;
+    }
+    tbody tr:nth-child(even) td {
+      background: rgba(248,250,252,0.96);
+    }
+    .badge {
+      display: inline-block; padding: 5px 9px; border-radius: 999px; font-size: 0.72rem; font-weight: 700;
+    }
+    .badge.credit { background: #dcfce7; color: #166534; }
+    .badge.debit { background: #fee2e2; color: #b91c1c; }
+    .badge.partial { background: #fef9c3; color: #854d0e; }
+    .badge.default { background: #e0f2fe; color: #075985; }
+    .muted { color: var(--muted); }
+    .empty-state {
+      text-align: center; padding: 26px 16px; color: var(--muted); font-weight: 700;
+    }
+    .footer-actions {
+      display: flex; justify-content: flex-end; gap: 8px; margin-top: 12px; flex-wrap: wrap;
+    }
+    .two-col {
+      display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 18px;
+    }
+    @media (max-width: 1000px) {
+      .admin-shell { grid-template-columns: 1fr; }
+      .sidebar { padding-bottom: 12px; }
+      .content { padding: 18px 14px 24px; }
+      .two-col { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="admin-shell">
+    <aside class="sidebar">
+      <div id="adminSidebar"></div>
+    </aside>
+    <main class="content">
+      <div class="shell">
+        <div class="topbar">
+          <div>
+            <div class="eyebrow">Finance</div>
+            <h1>Accounts Module</h1>
+          </div>
+          <div class="actions">
+            <button type="button" class="secondary" id="printAccountsBtn">Print / Export</button>
+          </div>
+        </div>
+
+        <div class="tab-bar" role="tablist" aria-label="Accounts Tabs">
+          <button type="button" class="tab" data-tab="cash-accounts">Cash &amp; Bank Accounts</button>
+          <button type="button" class="tab active" data-tab="vendor-ledger">Vendor Ledger</button>
+          <button type="button" class="tab" data-tab="client-ledger">Client Ledger</button>
+          <button type="button" class="tab" data-tab="payments">Vendor &amp; Client Payment</button>
+          <button type="button" class="tab" data-tab="expenses">Expense Register</button>
+          <button type="button" class="tab" data-tab="profitability">Item-Wise Profitability</button>
+        </div>
+
+        <section id="tab-cash-accounts" class="account-tab panel" style="display:none;">
+          <div class="two-col">
+            <div>
+              <h2 style="margin-bottom:12px;">Accounts &amp; Balances</h2>
+              <div style="overflow:auto; border-radius:14px; border:1px solid var(--border);">
+                <table><thead><tr><th>Account</th><th>Type</th><th>Opening Balance</th><th>Current Balance</th></tr></thead><tbody id="cashAccountsBody"></tbody></table>
+              </div>
+              <form id="createAccountForm" style="display:grid; gap:12px; margin-top:18px;">
+                <h3>Create Account</h3>
+                <label class="field"><span>Account Name</span><input id="accountName" required maxlength="120"></label>
+                <label class="field"><span>Type</span><select id="accountType"><option value="cash">Cash</option><option value="bank">Bank</option><option value="gateway_clearing">Gateway Clearing</option><option value="other">Other</option></select></label>
+                <label class="field"><span>Opening Balance</span><input id="openingBalance" type="number" step="0.01" value="0" required></label>
+                <div class="footer-actions"><button type="submit">Create Account</button></div>
+              </form>
+            </div>
+            <div>
+              <h2 style="margin-bottom:12px;">Transfer Funds</h2>
+              <form id="transferFundsForm" style="display:grid; gap:12px;">
+                <label class="field"><span>From Account</span><select id="fromAccount" required></select></label>
+                <label class="field"><span>To Account</span><select id="toAccount" required></select></label>
+                <label class="field"><span>Amount</span><input id="transferAmount" type="number" min="0.01" step="0.01" required></label>
+                <label class="field"><span>Transfer Date</span><input id="transferDate" type="date" required></label>
+                <label class="field"><span>Reference Note</span><textarea id="transferNote" placeholder="Optional reference"></textarea></label>
+                <div class="footer-actions"><button type="submit">Transfer Funds</button></div>
+              </form>
+            </div>
+          </div>
+        </section>
+
+        <section id="tab-vendor-ledger" class="account-tab panel">
+          <div class="filter-grid">
+            <label class="field">
+              <span>From Date</span>
+              <input id="vendorFromDate" type="date" />
+            </label>
+            <label class="field">
+              <span>To Date</span>
+              <input id="vendorToDate" type="date" />
+            </label>
+            <label class="field">
+              <span>Vendor</span>
+              <select id="vendorSelector"><option value="">All Vendors</option></select>
+            </label>
+            <div class="field" style="justify-content:end;">
+              <span style="opacity:0;">Apply</span>
+              <button type="button" id="fetchVendorLedgerBtn">Fetch Ledger</button>
+            </div>
+          </div>
+          <div id="vendorSummary" class="summary-grid"></div>
+          <div style="overflow:auto; border-radius: 14px; border: 1px solid var(--border);">
+            <table>
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Reference</th>
+                  <th>Type</th>
+                  <th>Description</th>
+                  <th>Debit (+)</th>
+                  <th>Credit (-)</th>
+                  <th>Running Balance</th>
+                </tr>
+              </thead>
+              <tbody id="vendorLedgerBody"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section id="tab-client-ledger" class="account-tab panel" style="display:none;">
+          <div class="filter-grid">
+            <label class="field">
+              <span>From Date</span>
+              <input id="clientFromDate" type="date" />
+            </label>
+            <label class="field">
+              <span>To Date</span>
+              <input id="clientToDate" type="date" />
+            </label>
+            <label class="field">
+              <span>Client</span>
+              <select id="clientSelector"><option value="">All Clients</option></select>
+            </label>
+            <div class="field" style="justify-content:end;">
+              <span style="opacity:0;">Apply</span>
+              <button type="button" id="fetchClientLedgerBtn">Fetch Ledger</button>
+            </div>
+          </div>
+          <div id="clientSummary" class="summary-grid"></div>
+          <div style="overflow:auto; border-radius: 14px; border: 1px solid var(--border);">
+            <table>
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Reference</th>
+                  <th>Type</th>
+                  <th>Description</th>
+                  <th>Debit (+)</th>
+                  <th>Credit (-)</th>
+                  <th>Running Balance</th>
+                </tr>
+              </thead>
+              <tbody id="clientLedgerBody"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section id="tab-payments" class="account-tab panel" style="display:none;">
+          <div class="two-col">
+            <div>
+              <div class="panel" style="margin-top:0; border-top: 4px solid rgba(2,132,199,0.7);">
+                <h3 style="margin-bottom:12px;">Vendor &amp; Client Payment</h3>
+                <form id="paymentForm" style="display:grid; gap:12px;">
+                  <label class="field">
+                    <span>Party Type</span>
+                    <select id="paymentPartyType">
+                      <option value="Vendor">Vendor</option>
+                      <option value="Client">Client</option>
+                    </select>
+                  </label>
+                  <label class="field">
+                    <span>Select Party</span>
+                    <select id="paymentPartySelect" required></select>
+                  </label>
+                  <label class="field">
+                    <span>Payment Type</span>
+                    <select id="paymentKind">
+                      <option value="Payment Made">Payment Made</option>
+                      <option value="Payment Received">Payment Received</option>
+                    </select>
+                  </label>
+                  <label class="field">
+                    <span>Payment Date</span>
+                    <input type="date" id="paymentDateInput" required />
+                  </label>
+                  <label class="field">
+                    <span>Amount Paid / Received</span>
+                    <input type="number" min="0" step="0.01" id="paymentAmountInput" required />
+                  </label>
+                  <label class="field">
+                    <span>Payment Method</span>
+                    <select id="paymentMethodInput">
+                      <option value="Cash">Cash</option>
+                      <option value="Bank Transfer">Bank Transfer</option>
+                      <option value="Cheque">Cheque</option>
+                      <option value="Online">Online</option>
+                    </select>
+                  </label>
+                  <label class="field">
+                    <span>Reference / Voucher Number</span>
+                    <input type="text" id="paymentReferenceInput" placeholder="Optional reference" />
+                  </label>
+                  <label class="field">
+                    <span>Notes / Description</span>
+                    <textarea id="paymentDescriptionInput" placeholder="Short description of the payment/receipt"></textarea>
+                  </label>
+                  <div class="footer-actions">
+                    <button type="submit">Save Payment</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+            <div>
+              <div class="panel" style="margin-top:0; border-top: 4px solid rgba(15,118,110,0.85);">
+                <h3 style="margin-bottom:12px;">Payment History</h3>
+                <div class="filter-grid">
+                  <label class="field">
+                    <span>From Date</span>
+                    <input id="paymentHistoryFromDate" type="date" />
+                  </label>
+                  <label class="field">
+                    <span>To Date</span>
+                    <input id="paymentHistoryToDate" type="date" />
+                  </label>
+                  <label class="field">
+                    <span>Party Type</span>
+                    <select id="paymentHistoryPartyType">
+                      <option value="">All</option>
+                      <option value="Vendor">Vendor</option>
+                      <option value="Client">Client</option>
+                    </select>
+                  </label>
+                  <label class="field">
+                    <span>Payment Method</span>
+                    <select id="paymentHistoryMethod">
+                      <option value="">All Methods</option>
+                      <option value="Cash">Cash</option>
+                      <option value="Bank Transfer">Bank Transfer</option>
+                      <option value="Cheque">Cheque</option>
+                      <option value="Online">Online</option>
+                    </select>
+                  </label>
+                  <div class="field" style="justify-content:end;">
+                    <span style="opacity:0;">Apply</span>
+                    <button type="button" id="fetchPaymentHistoryBtn">Apply Filters</button>
+                  </div>
+                </div>
+                <div style="overflow:auto; border-radius: 14px; border: 1px solid var(--border);">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Date</th>
+                        <th>Party</th>
+                        <th>Type</th>
+                        <th>Method</th>
+                        <th>Reference</th>
+                        <th>Amount</th>
+                        <th>Description</th>
+                      </tr>
+                    </thead>
+                    <tbody id="paymentHistoryBody"></tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="tab-expenses" class="account-tab panel" style="display:none;">
+          <div class="two-col">
+            <div>
+              <div class="filter-grid">
+                <label class="field">
+                  <span>From Date</span>
+                  <input id="expenseFromDate" type="date" />
+                </label>
+                <label class="field">
+                  <span>To Date</span>
+                  <input id="expenseToDate" type="date" />
+                </label>
+                <label class="field">
+                  <span>Category</span>
+                  <select id="expenseCategoryFilter">
+                    <option value="">All Categories</option>
+                  </select>
+                </label>
+                <div class="field" style="justify-content:end;">
+                  <span style="opacity:0;">Apply</span>
+                  <button type="button" id="fetchExpenseBtn">Apply Filter</button>
+                </div>
+              </div>
+              <div id="expenseSummary" class="summary-grid"></div>
+              <div style="overflow:auto; border-radius: 14px; border: 1px solid var(--border);">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Date</th>
+                      <th>Category</th>
+                      <th>Description</th>
+                      <th>Amount</th>
+                      <th>Method</th>
+                      <th>Reference</th>
+                    </tr>
+                  </thead>
+                  <tbody id="expenseTableBody"></tbody>
+                </table>
+              </div>
+            </div>
+            <div>
+              <div class="panel" style="margin-top:0; border-top: 4px solid rgba(15,118,110,0.85);">
+                <h3 style="margin-bottom:12px;">Log Expense</h3>
+                <form id="expenseForm" style="display:grid; gap:12px;">
+                  <label class="field">
+                    <span>Expense Date</span>
+                    <input type="date" id="expenseDateInput" required />
+                  </label>
+                  <label class="field">
+                    <span>Category</span>
+                    <select id="expenseCategoryInput" required></select>
+                  </label>
+                  <label class="field">
+                    <span>Description</span>
+                    <textarea id="expenseDescriptionInput" required placeholder="Office rent, tax, etc."></textarea>
+                  </label>
+                  <label class="field">
+                    <span>Amount</span>
+                    <input type="number" min="0" step="0.01" id="expenseAmountInput" required />
+                  </label>
+                  <label class="field">
+                    <span>Payment Method</span>
+                    <select id="expensePaymentMethodInput">
+                      <option value="Cash">Cash</option>
+                      <option value="Bank Transfer">Bank Transfer</option>
+                      <option value="Card">Card</option>
+                      <option value="Cheque">Cheque</option>
+                    </select>
+                  </label>
+                  <label class="field">
+                    <span>Reference No</span>
+                    <input type="text" id="expenseReferenceInput" placeholder="Optional" />
+                  </label>
+                  <div class="footer-actions">
+                    <button type="submit">Save Expense</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="tab-profitability" class="account-tab panel" style="display:none;">
+          <div class="filter-grid">
+            <label class="field">
+              <span>From Date</span>
+              <input id="profitFromDate" type="date" />
+            </label>
+            <label class="field">
+              <span>To Date</span>
+              <input id="profitToDate" type="date" />
+            </label>
+            <div class="field" style="justify-content:end;">
+              <span style="opacity:0;">Apply</span>
+              <button type="button" id="fetchProfitabilityBtn">Fetch Report</button>
+            </div>
+          </div>
+          <div id="profitabilitySummary" class="summary-grid"></div>
+          <div style="overflow:auto; border-radius: 14px; border: 1px solid var(--border);">
+            <table>
+              <thead>
+                <tr>
+                  <th>Product</th>
+                  <th>Pack Size</th>
+                  <th>Brand</th>
+                  <th>Sold Qty</th>
+                  <th>Sale Rate</th>
+                  <th>Avg Sale Rate</th>
+                  <th>Discount %</th>
+                  <th>Discount</th>
+                  <th>COGS</th>
+                  <th>Gross Margin</th>
+                </tr>
+              </thead>
+              <tbody id="profitabilityBody"></tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <script src="/admin/sidebar.js"></script>
+  <script>
+    const expenseCategories = ['Domain Fee', 'Tax', 'Internet Expenses', 'Hosting', 'Marketing', 'Office Supplies', 'Miscellaneous'];
+    const state = {
+      suppliers: [],
+      customers: [],
+      expenses: [],
+      vendorLedger: [],
+      clientLedger: [],
+      profitability: [],
+      paymentHistory: [],
+      cashAccounts: []
+    };
+
+    function money(value) {
+      return new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP', minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(Number(value || 0));
+    }
+
+    function formatDate(value) {
+      if (!value) return '—';
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return value;
+      return date.toISOString().slice(0, 10);
+    }
+
+    function renderSummary(containerId, items) {
+      const container = document.getElementById(containerId);
+      if (!container) return;
+      container.innerHTML = items.map((item) => `
+        <div class="metric">
+          <div class="metric-label">${item.label}</div>
+          <div class="metric-value">${item.value}</div>
+        </div>
+      `).join('');
+    }
+
+    function renderPercent(value) {
+      return `${Number(value || 0).toFixed(2)}%`;
+    }
+
+    function setTab(tabName) {
+      document.querySelectorAll('.account-tab').forEach((section) => {
+        section.style.display = section.id === `tab-${tabName}` ? '' : 'none';
+      });
+      document.querySelectorAll('.tab').forEach((button) => {
+        button.classList.toggle('active', button.dataset.tab === tabName);
+      });
+    }
+
+    function fillSelectors() {
+      const vendorSelect = document.getElementById('vendorSelector');
+      const clientSelect = document.getElementById('clientSelector');
+      const expenseCategoryFilter = document.getElementById('expenseCategoryFilter');
+      const expenseCategoryInput = document.getElementById('expenseCategoryInput');
+      const paymentPartySelect = document.getElementById('paymentPartySelect');
+
+      vendorSelect.innerHTML = '<option value="">All Vendors</option>' + state.suppliers.map((supplier) => `<option value="${supplier.id}">${supplier.name}</option>`).join('');
+      clientSelect.innerHTML = '<option value="">All Clients</option>' + state.customers.map((customer) => `<option value="${customer.id}">${customer.name}</option>`).join('');
+      window.applySmartSearch && window.applySmartSearch(vendorSelect);
+      window.applySmartSearch && window.applySmartSearch(clientSelect);
+
+      const categoryOptions = ['<option value="">All Categories</option>'].concat(expenseCategories.map((category) => `<option value="${category}">${category}</option>`));
+      expenseCategoryFilter.innerHTML = categoryOptions.join('');
+      expenseCategoryInput.innerHTML = expenseCategories.map((category) => `<option value="${category}">${category}</option>`).join('');
+
+      const partyType = document.getElementById('paymentPartyType').value;
+      const partyOptions = partyType === 'Client' ? state.customers : state.suppliers;
+      paymentPartySelect.innerHTML = partyOptions.map((party) => `<option value="${party.id}">${party.name}</option>`).join('') || '<option value="">No parties available</option>';
+      window.applySmartSearch && window.applySmartSearch(paymentPartySelect);
+    }
+
+    function renderCashAccounts() {
+      const body = document.getElementById('cashAccountsBody');
+      const options = state.cashAccounts.map((account) => `<option value="${account.id}">${account.name} (${money(account.current_balance)})</option>`).join('');
+      document.getElementById('fromAccount').innerHTML = '<option value="">Select source account</option>' + options;
+      document.getElementById('toAccount').innerHTML = '<option value="">Select destination account</option>' + options;
+      body.innerHTML = state.cashAccounts.length ? state.cashAccounts.map((account) => `<tr><td>${account.name}</td><td>${account.type.replace('_', ' ')}</td><td>${money(account.opening_balance)}</td><td>${money(account.current_balance)}</td></tr>`).join('') : '<tr><td colspan="4" class="empty-state">Create a cash, bank, gateway-clearing, or other account to begin.</td></tr>';
+    }
+
+    async function loadCashAccounts() {
+      const response = await fetch('/api/admin/accounts');
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || 'Unable to load accounts.');
+      state.cashAccounts = data.accounts || [];
+      renderCashAccounts();
+    }
+
+    async function ensureSession() {
+      const response = await fetch('/api/admin/me');
+      const data = await response.json();
+      if (!data.authenticated) {
+        window.location.href = '/admin/login.html';
+        return false;
+      }
+      return true;
+    }
+
+    async function loadMasterData() {
+      const [supplierResponse, customerResponse] = await Promise.all([
+        fetch('/api/suppliers'),
+        fetch('/api/customers')
+      ]);
+      const supplierData = await supplierResponse.json();
+      const customerData = await customerResponse.json();
+      state.suppliers = supplierData.suppliers || [];
+      state.customers = customerData.customers || [];
+      fillSelectors();
+    }
+
+    async function fetchVendorLedger() {
+      const params = new URLSearchParams();
+      const fromDate = document.getElementById('vendorFromDate').value;
+      const toDate = document.getElementById('vendorToDate').value;
+      const supplierId = document.getElementById('vendorSelector').value;
+      if (fromDate) params.set('from_date', fromDate);
+      if (toDate) params.set('to_date', toDate);
+      if (supplierId) params.set('supplier_id', supplierId);
+
+      const response = await fetch(`/api/accounts/vendor-ledger?${params.toString()}`);
+      const data = await response.json();
+      state.vendorLedger = data.rows || [];
+      renderSummary('vendorSummary', [
+        { label: 'Total Billed', value: money(data.summary?.total_billed || 0) },
+        { label: 'Total Paid', value: money(data.summary?.total_paid || 0) },
+        { label: 'Outstanding', value: money(data.summary?.total_outstanding || 0) }
+      ]);
+      renderVendorTable();
+    }
+
+    function renderVendorTable() {
+      const tbody = document.getElementById('vendorLedgerBody');
+      if (!tbody) return;
+      if (!state.vendorLedger.length) {
+        tbody.innerHTML = '<tr><td colspan="7" class="empty-state">No vendor ledger rows available for the selected period.</td></tr>';
+        return;
+      }
+      tbody.innerHTML = state.vendorLedger.map((row) => `
+        <tr>
+          <td>${formatDate(row.date)}</td>
+          <td>${row.reference_no || '—'}</td>
+          <td><span class="badge ${row.type === 'Payment' ? 'credit' : 'default'}">${row.type || 'Entry'}</span></td>
+          <td>${row.description || '—'}</td>
+          <td>${row.debit > 0 ? money(row.debit) : '—'}</td>
+          <td>${row.credit > 0 ? money(row.credit) : '—'}</td>
+          <td>${money(row.running_balance)}</td>
+        </tr>
+      `).join('');
+    }
+
+    async function fetchClientLedger() {
+      const params = new URLSearchParams();
+      const fromDate = document.getElementById('clientFromDate').value;
+      const toDate = document.getElementById('clientToDate').value;
+      const customerId = document.getElementById('clientSelector').value;
+      if (fromDate) params.set('from_date', fromDate);
+      if (toDate) params.set('to_date', toDate);
+      if (customerId) params.set('customer_id', customerId);
+
+      const response = await fetch(`/api/accounts/client-ledger?${params.toString()}`);
+      const data = await response.json();
+      state.clientLedger = data.rows || [];
+      renderSummary('clientSummary', [
+        { label: 'Total Billed', value: money(data.summary?.total_billed || 0) },
+        { label: 'Total Received', value: money(data.summary?.total_paid_received || 0) },
+        { label: 'Outstanding', value: money(data.summary?.total_outstanding || 0) }
+      ]);
+      renderClientTable();
+    }
+
+    function renderClientTable() {
+      const tbody = document.getElementById('clientLedgerBody');
+      if (!tbody) return;
+      if (!state.clientLedger.length) {
+        tbody.innerHTML = '<tr><td colspan="7" class="empty-state">No client ledger rows available for the selected period.</td></tr>';
+        return;
+      }
+      tbody.innerHTML = state.clientLedger.map((row) => `
+        <tr>
+          <td>${formatDate(row.date)}</td>
+          <td>${row.reference_no || '—'}</td>
+          <td><span class="badge ${row.type === 'Payment' ? 'credit' : row.type === 'Return' ? 'credit' : 'default'}">${row.type || 'Entry'}</span></td>
+          <td>${row.description || '—'}</td>
+          <td>${row.debit > 0 ? money(row.debit) : '—'}</td>
+          <td>${row.credit > 0 ? money(row.credit) : '—'}</td>
+          <td>${money(row.running_balance)}</td>
+        </tr>
+      `).join('');
+    }
+
+    async function fetchPaymentHistory() {
+      const params = new URLSearchParams();
+      const fromDate = document.getElementById('paymentHistoryFromDate').value;
+      const toDate = document.getElementById('paymentHistoryToDate').value;
+      const partyType = document.getElementById('paymentHistoryPartyType').value;
+      const paymentMethod = document.getElementById('paymentHistoryMethod').value;
+      if (fromDate) params.set('from_date', fromDate);
+      if (toDate) params.set('to_date', toDate);
+      if (partyType) params.set('party_type', partyType);
+      if (paymentMethod) params.set('payment_method', paymentMethod);
+
+      const response = await fetch(`/api/accounts/payment-history?${params.toString()}`);
+      const data = await response.json();
+      state.paymentHistory = data.rows || [];
+      renderPaymentHistoryTable();
+    }
+
+    function renderPaymentHistoryTable() {
+      const tbody = document.getElementById('paymentHistoryBody');
+      if (!tbody) return;
+      if (!state.paymentHistory.length) {
+        tbody.innerHTML = '<tr><td colspan="7" class="empty-state">No payment or receipt transactions found.</td></tr>';
+        return;
+      }
+      tbody.innerHTML = state.paymentHistory.map((row) => `
+        <tr>
+          <td>${formatDate(row.entry_date || row.date)}</td>
+          <td>${row.party_name || '—'}</td>
+          <td><span class="badge ${row.party_type === 'Vendor' ? 'debit' : 'credit'}">${row.payment_type || row.party_type || 'Payment'}</span></td>
+          <td>${row.payment_method || 'Cash'}</td>
+          <td>${row.payment_reference || '—'}</td>
+          <td>${money(row.absolute_amount || row.amount || 0)}</td>
+          <td>${row.description || '—'}</td>
+        </tr>
+      `).join('');
+    }
+
+    async function fetchExpenseData() {
+      const params = new URLSearchParams();
+      const fromDate = document.getElementById('expenseFromDate').value;
+      const toDate = document.getElementById('expenseToDate').value;
+      const category = document.getElementById('expenseCategoryFilter').value;
+      if (fromDate) params.set('from_date', fromDate);
+      if (toDate) params.set('to_date', toDate);
+      if (category) params.set('category', category);
+
+      const response = await fetch(`/api/accounts/expenses?${params.toString()}`);
+      const data = await response.json();
+      state.expenses = data.expenses || [];
+      renderSummary('expenseSummary', [
+        { label: 'Total Expense', value: money(data.total_expenses || 0) },
+        { label: 'Records', value: String(state.expenses.length) },
+        { label: 'Filtered', value: category || 'All Categories' }
+      ]);
+      renderExpenseTable();
+    }
+
+    function renderExpenseTable() {
+      const tbody = document.getElementById('expenseTableBody');
+      if (!tbody) return;
+      if (!state.expenses.length) {
+        tbody.innerHTML = '<tr><td colspan="6" class="empty-state">No expense records found.</td></tr>';
+        return;
+      }
+      tbody.innerHTML = state.expenses.map((row) => `
+        <tr>
+          <td>${formatDate(row.expense_date)}</td>
+          <td>${row.category || 'Miscellaneous'}</td>
+          <td>${row.description || '—'}</td>
+          <td>${money(row.amount)}</td>
+          <td>${row.payment_method || 'Cash'}</td>
+          <td>${row.reference_no || '—'}</td>
+        </tr>
+      `).join('');
+    }
+
+    async function fetchProfitability() {
+      const params = new URLSearchParams();
+      const fromDate = document.getElementById('profitFromDate').value;
+      const toDate = document.getElementById('profitToDate').value;
+      if (fromDate) params.set('from_date', fromDate);
+      if (toDate) params.set('to_date', toDate);
+
+      const response = await fetch(`/api/accounts/profitability?${params.toString()}`);
+      const data = await response.json();
+      state.profitability = data.rows || [];
+      renderSummary('profitabilitySummary', [
+        { label: 'Gross Sales', value: money(data.summary?.total_gross_sales || 0) },
+        { label: 'Discounts', value: money(data.summary?.total_discounts || 0) },
+        { label: 'COGS', value: money(data.summary?.total_cogs || 0) },
+        { label: 'Gross Margin', value: money(data.summary?.total_gross_margin || 0) },
+        { label: 'Operating Exp.', value: money(data.summary?.total_operating_expenses || 0) },
+        { label: 'Net Profit', value: money(data.summary?.net_profit || 0) }
+      ]);
+      renderProfitabilityTable();
+    }
+
+    function renderProfitabilityTable() {
+      const tbody = document.getElementById('profitabilityBody');
+      if (!tbody) return;
+      if (!state.profitability.length) {
+        tbody.innerHTML = '<tr><td colspan="10" class="empty-state">No profitability data found for the selected dates.</td></tr>';
+        return;
+      }
+      tbody.innerHTML = state.profitability.map((row) => `
+        <tr>
+          <td>${row.product_name || '—'}</td>
+          <td>${row.pack_size || '—'}</td>
+          <td>${row.brand || '—'}</td>
+          <td>${Number(row.sold_qty || 0)}</td>
+          <td>${money(row.sale_rate)}</td>
+          <td>${money(row.avg_sale_rate)}</td>
+          <td>${renderPercent(row.discount_pct)}</td>
+          <td>${money(row.discount_total)}</td>
+          <td>${money(row.cogs)}</td>
+          <td>${money(row.gross_margin)}</td>
+        </tr>
+      `).join('');
+    }
+
+    document.getElementById('paymentPartyType').addEventListener('change', () => {
+      const partyType = document.getElementById('paymentPartyType').value;
+      const partySelect = document.getElementById('paymentPartySelect');
+      const paymentKind = document.getElementById('paymentKind');
+      const parties = partyType === 'Client' ? state.customers : state.suppliers;
+      partySelect.innerHTML = parties.map((party) => `<option value="${party.id}">${party.name}</option>`).join('') || '<option value="">No parties available</option>';
+      window.applySmartSearch && window.applySmartSearch(partySelect);
+      paymentKind.value = partyType === 'Client' ? 'Payment Received' : 'Payment Made';
+    });
+
+    document.getElementById('paymentForm').addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const partyType = document.getElementById('paymentPartyType').value;
+      const partyId = Number(document.getElementById('paymentPartySelect').value || 0);
+      const amount = Number(document.getElementById('paymentAmountInput').value || 0);
+      const paymentDate = document.getElementById('paymentDateInput').value;
+      const paymentMethod = document.getElementById('paymentMethodInput').value;
+      const referenceNo = document.getElementById('paymentReferenceInput').value;
+      const description = document.getElementById('paymentDescriptionInput').value;
+
+      if (!partyId || !paymentDate || !Number.isFinite(amount) || amount <= 0) {
+        alert('Please select a party, date, and a valid amount.');
+        return;
+      }
+
+      const endpoint = partyType === 'Client' ? '/api/accounts/client-receipts' : '/api/accounts/vendor-payments';
+      const payload = partyType === 'Client'
+        ? {
+            customer_id: partyId,
+            amount,
+            entry_date: paymentDate,
+            payment_method: paymentMethod,
+            reference_no: referenceNo,
+            description: description || `Payment received via ${paymentMethod}`,
+          }
+        : {
+            supplier_id: partyId,
+            amount,
+            payment_date: paymentDate,
+            payment_method: paymentMethod,
+            reference_no: referenceNo,
+            description: description || `Payment made via ${paymentMethod}`,
+          };
+
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        alert(data.error || 'Unable to save payment.');
+        return;
+      }
+
+      document.getElementById('paymentForm').reset();
+      document.getElementById('paymentPartyType').value = 'Vendor';
+      document.getElementById('paymentKind').value = 'Payment Made';
+      initPaymentPartySelection();
+      document.getElementById('paymentDateInput').value = new Date().toISOString().slice(0, 10);
+      await Promise.all([fetchPaymentHistory(), fetchVendorLedger(), fetchClientLedger()]);
+    });
+
+    document.getElementById('createAccountForm').addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const response = await fetch('/api/admin/accounts', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: document.getElementById('accountName').value, type: document.getElementById('accountType').value, opening_balance: document.getElementById('openingBalance').value }) });
+      const data = await response.json();
+      if (!response.ok) return alert(data.error || 'Unable to create account.');
+      event.target.reset();
+      document.getElementById('openingBalance').value = '0';
+      await loadCashAccounts();
+    });
+
+    document.getElementById('transferFundsForm').addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const response = await fetch('/api/admin/accounts/transfers', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ from_account_id: document.getElementById('fromAccount').value, to_account_id: document.getElementById('toAccount').value, amount: document.getElementById('transferAmount').value, transfer_date: document.getElementById('transferDate').value, reference_note: document.getElementById('transferNote').value }) });
+      const data = await response.json();
+      if (!response.ok) return alert(data.error || 'Unable to transfer funds.');
+      event.target.reset();
+      document.getElementById('transferDate').value = new Date().toISOString().slice(0, 10);
+      await loadCashAccounts();
+    });
+
+    document.getElementById('expenseForm').addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const payload = {
+        expense_date: document.getElementById('expenseDateInput').value,
+        category: document.getElementById('expenseCategoryInput').value,
+        description: document.getElementById('expenseDescriptionInput').value,
+        amount: document.getElementById('expenseAmountInput').value,
+        payment_method: document.getElementById('expensePaymentMethodInput').value,
+        reference_no: document.getElementById('expenseReferenceInput').value
+      };
+
+      const response = await fetch('/api/accounts/expenses', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        alert(data.error || 'Unable to save expense.');
+        return;
+      }
+      document.getElementById('expenseForm').reset();
+      await fetchExpenseData();
+    });
+
+    function initPaymentPartySelection() {
+      const partyType = document.getElementById('paymentPartyType').value;
+      const partySelect = document.getElementById('paymentPartySelect');
+      const partyOptions = partyType === 'Client' ? state.customers : state.suppliers;
+      partySelect.innerHTML = partyOptions.map((party) => `<option value="${party.id}">${party.name}</option>`).join('') || '<option value="">No parties available</option>';
+      window.applySmartSearch && window.applySmartSearch(partySelect);
+      document.getElementById('paymentKind').value = partyType === 'Client' ? 'Payment Received' : 'Payment Made';
+    }
+
+    document.querySelectorAll('.tab').forEach((button) => {
+      button.addEventListener('click', () => setTab(button.dataset.tab));
+    });
+
+    document.getElementById('fetchVendorLedgerBtn').addEventListener('click', fetchVendorLedger);
+    document.getElementById('fetchClientLedgerBtn').addEventListener('click', fetchClientLedger);
+    document.getElementById('fetchPaymentHistoryBtn').addEventListener('click', fetchPaymentHistory);
+    document.getElementById('fetchExpenseBtn').addEventListener('click', fetchExpenseData);
+    document.getElementById('fetchProfitabilityBtn').addEventListener('click', fetchProfitability);
+    document.getElementById('printAccountsBtn').addEventListener('click', () => window.print());
+
+    async function init() {
+      const ok = await ensureSession();
+      if (!ok) return;
+      await loadMasterData();
+      const today = new Date();
+      const start = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().slice(0, 10);
+      document.getElementById('vendorFromDate').value = start;
+      document.getElementById('vendorToDate').value = today.toISOString().slice(0, 10);
+      document.getElementById('clientFromDate').value = start;
+      document.getElementById('clientToDate').value = today.toISOString().slice(0, 10);
+      document.getElementById('expenseFromDate').value = start;
+      document.getElementById('expenseToDate').value = today.toISOString().slice(0, 10);
+      document.getElementById('profitFromDate').value = start;
+      document.getElementById('profitToDate').value = today.toISOString().slice(0, 10);
+      document.getElementById('expenseDateInput').value = today.toISOString().slice(0, 10);
+      document.getElementById('paymentDateInput').value = today.toISOString().slice(0, 10);
+      document.getElementById('paymentHistoryFromDate').value = start;
+      document.getElementById('paymentHistoryToDate').value = today.toISOString().slice(0, 10);
+      document.getElementById('transferDate').value = today.toISOString().slice(0, 10);
+      initPaymentPartySelection();
+      await loadCashAccounts();
+      await Promise.all([
+        fetchVendorLedger(),
+        fetchClientLedger(),
+        fetchPaymentHistory(),
+        fetchExpenseData(),
+        fetchProfitability()
+      ]);
+    }
+
+    init();
+  </script>
+</body>
+</html>

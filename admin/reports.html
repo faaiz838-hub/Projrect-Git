@@ -1,0 +1,1025 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Business Name Reports</title>
+  <style>
+    :root {
+      --bg: #07131f;
+      --bg-soft: #0d1d2c;
+      --panel: rgba(15, 23, 42, 0.85);
+      --panel-strong: #101b2a;
+      --sidebar: #060d17;
+      --sidebar-soft: rgba(148, 163, 184, 0.08);
+      --text: #e2e8f0;
+      --text-strong: #f8fafc;
+      --muted: #94a3b8;
+      --border: rgba(148, 163, 184, 0.22);
+      --primary: #38bdf8;
+      --primary-alt: #7c3aed;
+      --primary-dark: #0ea5e9;
+      --success: #22c55e;
+      --warning: #f59e0b;
+      --danger: #f87171;
+      --shadow: 0 18px 40px rgba(2, 6, 23, 0.45);
+      --cyan-soft: rgba(56, 189, 248, 0.14);
+      --red-soft: rgba(248, 113, 113, 0.12);
+      --green-soft: rgba(34, 197, 94, 0.12);
+      --amber-soft: rgba(245, 158, 11, 0.12);
+      --slate-900: #0f172a;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(56, 189, 248, 0.18), transparent 30%),
+        radial-gradient(circle at bottom right, rgba(124, 58, 237, 0.16), transparent 32%),
+        var(--bg);
+      color: var(--text);
+    }
+
+    .admin-shell {
+      display: grid;
+      grid-template-columns: 240px 1fr;
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      background: linear-gradient(180deg, rgba(6, 13, 23, 0.98), rgba(12, 20, 31, 0.95));
+      color: white;
+      padding: 24px 16px;
+      border-right: 1px solid rgba(148, 163, 184, 0.15);
+      box-shadow: inset -1px 0 0 rgba(148,163,184,0.12);
+    }
+
+    .brand {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 2px;
+      font-size: 1.3rem;
+      font-weight: 800;
+      margin-bottom: 26px;
+      padding: 0 10px 14px;
+      color: var(--text-strong);
+      border-bottom: 1px solid rgba(148, 163, 184, 0.14);
+      letter-spacing: 0.02em;
+      line-height: 1.08;
+      max-width: 148px;
+    }
+    .brand span { display: block; }
+
+    .nav {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .nav a {
+      color: rgba(226, 232, 240, 0.92);
+      text-decoration: none;
+      padding: 12px 14px;
+      border-radius: 12px;
+      opacity: 0.9;
+      background: rgba(15, 23, 42, 0.35);
+      display: block;
+      border: 1px solid transparent;
+      font-size: 0.96rem;
+      font-weight: 700;
+      transition: 0.2s ease;
+    }
+
+    .nav a:hover {
+      background: rgba(56, 189, 248, 0.08);
+      border-color: rgba(56, 189, 248, 0.24);
+      transform: translateX(2px);
+    }
+
+    .nav a.active {
+      background: linear-gradient(90deg, rgba(14, 165, 233, 0.22), rgba(124, 58, 237, 0.14));
+      border-color: rgba(96, 165, 250, 0.42);
+      box-shadow: inset 0 0 0 1px rgba(125, 211, 252, 0.18);
+      font-weight: 800;
+    }
+
+    .content {
+      padding: 28px;
+      background: linear-gradient(180deg, rgba(7, 19, 31, 0.25), rgba(7, 19, 31, 0.18));
+    }
+
+    .page-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 22px;
+      flex-wrap: wrap;
+      padding: 18px 20px;
+      border-radius: 18px;
+      background: linear-gradient(135deg, rgba(15, 23, 42, 0.85), rgba(9, 18, 31, 0.9));
+      border: 1px solid rgba(148, 163, 184, 0.18);
+      box-shadow: var(--shadow);
+    }
+
+    .eyebrow {
+      color: var(--primary);
+      text-transform: uppercase;
+      letter-spacing: 0.09em;
+      font-size: 0.72rem;
+      font-weight: 800;
+      margin-bottom: 7px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(1.8rem, 2vw, 2.5rem);
+      color: var(--text-strong);
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .button-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .range-chips {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 16px;
+    }
+
+    .range-chips button {
+      padding: 8px 12px;
+      font-size: 0.76rem;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      border-radius: 10px;
+    }
+
+    .placeholder-label {
+      display: none;
+    }
+
+    button {
+      border: none;
+      border-radius: 12px;
+      padding: 10px 14px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: white;
+      cursor: pointer;
+      font-weight: 800;
+      box-shadow: 0 10px 24px rgba(14, 165, 233, 0.25);
+      transition: transform 0.18s ease, box-shadow 0.18s ease, opacity 0.18s ease;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 14px 26px rgba(14, 165, 233, 0.32);
+    }
+
+    button.secondary {
+      background: linear-gradient(135deg, rgba(148,163,184,0.16), rgba(15,23,42,0.7));
+      color: var(--text-strong);
+      border: 1px solid rgba(148,163,184,0.18);
+      box-shadow: none;
+    }
+
+    .report-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 18px;
+      margin-bottom: 22px;
+    }
+
+    .stat-card,
+    .panel,
+    .report-card {
+      background: linear-gradient(180deg, rgba(15, 23, 42, 0.9), rgba(12, 19, 29, 0.96));
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+    }
+
+    .stat-card {
+      position: relative;
+      overflow: hidden;
+      padding: 20px 20px 18px;
+      min-height: 120px;
+      background: linear-gradient(180deg, rgba(15, 23, 42, 0.92), rgba(15, 23, 42, 0.85));
+      border: 1px solid rgba(148, 163, 184, 0.16);
+    }
+
+    .stat-card::before {
+      content: "";
+      position: absolute;
+      inset: 0 0 auto 0;
+      height: 4px;
+      background: linear-gradient(90deg, var(--primary), var(--primary-alt));
+    }
+
+    .stat-card.blue {
+      background: linear-gradient(180deg, rgba(14, 116, 144, 0.18), rgba(9, 19, 31, 0.95));
+      border-color: rgba(56, 189, 248, 0.22);
+    }
+
+    .stat-card.red {
+      background: linear-gradient(180deg, rgba(127, 29, 29, 0.16), rgba(9, 19, 31, 0.96));
+      border-color: rgba(248, 113, 113, 0.18);
+    }
+
+    .stat-card.green {
+      background: linear-gradient(180deg, rgba(20, 83, 45, 0.18), rgba(9, 19, 31, 0.96));
+      border-color: rgba(34, 197, 94, 0.18);
+    }
+
+    .stat-card.orange {
+      background: linear-gradient(180deg, rgba(120, 53, 15, 0.18), rgba(9, 19, 31, 0.96));
+      border-color: rgba(245, 158, 11, 0.18);
+    }
+
+    .stat-card.navy {
+      background: linear-gradient(180deg, rgba(30, 41, 59, 0.9), rgba(9, 19, 31, 0.96));
+      border-color: rgba(148, 163, 184, 0.18);
+    }
+
+    .stat-label {
+      color: var(--muted);
+      font-size: 0.77rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 10px;
+      font-weight: 800;
+    }
+
+    .stat-value {
+      font-size: clamp(1.5rem, 2vw, 2.2rem);
+      font-weight: 800;
+      color: var(--text-strong);
+      letter-spacing: -0.02em;
+    }
+
+    .panel {
+      padding: 20px;
+      margin-top: 18px;
+    }
+
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+
+    h2, h3 {
+      margin: 0;
+      color: var(--text-strong);
+    }
+
+    .filters {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: end;
+      margin-bottom: 14px;
+    }
+
+    .filters input,
+    .filters select {
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      border-radius: 12px;
+      padding: 10px 12px;
+      font-size: 0.95rem;
+      background: rgba(15, 23, 42, 0.7);
+      color: var(--text-strong);
+      outline: none;
+    }
+
+    .filters input:focus,
+    .filters select:focus {
+      border-color: rgba(56, 189, 248, 0.7);
+      box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.12);
+    }
+
+    .report-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 18px;
+      margin-top: 18px;
+    }
+
+    .report-card {
+      padding: 18px;
+      position: relative;
+      background: linear-gradient(180deg, rgba(15, 23, 42, 0.88), rgba(12, 19, 29, 0.96));
+      border: 1px solid rgba(148, 163, 184, 0.16);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+    }
+
+    .report-card h3 {
+      margin-bottom: 12px;
+      font-size: 1.08rem;
+      color: var(--text-strong);
+    }
+
+    .formula-box {
+      background: linear-gradient(180deg, rgba(9, 19, 31, 0.95), rgba(17, 24, 39, 0.98));
+    }
+
+    .formula-block {
+      display: grid;
+      gap: 10px;
+      margin-top: 12px;
+      padding: 16px;
+      border-radius: 14px;
+      background: rgba(15, 23, 42, 0.5);
+      border: 1px solid rgba(148, 163, 184, 0.14);
+    }
+
+    .formula-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      color: var(--muted);
+      font-size: 0.95rem;
+      font-weight: 700;
+    }
+
+    .formula-row strong {
+      color: var(--text-strong);
+      font-size: 1rem;
+    }
+
+    .formula-row.minus strong {
+      color: #fecaca;
+    }
+
+    .formula-divider {
+      height: 1px;
+      background: linear-gradient(90deg, rgba(148,163,184,0.08), rgba(56,189,248,0.7), rgba(148,163,184,0.08));
+      margin: 4px 0;
+    }
+
+    .formula-row.total {
+      color: var(--text-strong);
+      font-size: 1rem;
+      font-weight: 800;
+    }
+
+    .formula-row.total strong {
+      color: #ccfbf1;
+      font-size: 1.15rem;
+    }
+
+    .table-wrap {
+      overflow: auto;
+      border-radius: 16px;
+      border: 1px solid rgba(148, 163, 184, 0.18);
+      background: rgba(255, 255, 255, 0.8);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.6);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      background: rgba(255,255,255,0.78);
+    }
+
+    th, td {
+      padding: 12px 10px;
+      text-align: left;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.18);
+      font-size: 0.94rem;
+      vertical-align: top;
+      color: var(--text);
+    }
+
+    th {
+      background: linear-gradient(180deg, #f8fafc 0%, #eef6ff 100%);
+      font-weight: 800;
+      color: var(--muted);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-size: 0.73rem;
+    }
+
+    tbody td {
+      background: rgba(255,255,255,0.82);
+    }
+
+    tbody tr:nth-child(even) td {
+      background: rgba(248,250,252,0.9);
+    }
+
+    tbody tr:hover td {
+      background: linear-gradient(90deg, rgba(14,165,233,0.06), rgba(59,130,246,0.04));
+      box-shadow: inset 0 0 0 1px rgba(14,165,233,0.05);
+    }
+
+    .muted {
+      color: var(--muted);
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 5px 9px;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 800;
+      background: rgba(56, 189, 248, 0.18);
+      color: #bae6fd;
+      border: 1px solid rgba(125, 211, 252, 0.2);
+    }
+
+    .badge.warning {
+      background: rgba(245, 158, 11, 0.16);
+      color: #fcd34d;
+      border-color: rgba(252, 211, 77, 0.2);
+    }
+
+    .badge.danger {
+      background: rgba(248, 113, 113, 0.14);
+      color: #fecaca;
+      border-color: rgba(248, 113, 113, 0.2);
+    }
+
+    .badge.success {
+      background: rgba(34, 197, 94, 0.14);
+      color: #bbf7d0;
+      border-color: rgba(34, 197, 94, 0.2);
+    }
+
+    .subtle {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border-radius: 999px;
+      background: rgba(148, 163, 184, 0.08);
+      padding: 5px 10px;
+      font-weight: 700;
+      color: var(--muted);
+      font-size: 0.78rem;
+      border: 1px solid rgba(148,163,184,0.12);
+    }
+
+    .callout {
+      padding: 14px 16px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, rgba(14,165,233,0.09), rgba(124,58,237,0.08));
+      border: 1px solid rgba(96, 165, 250, 0.22);
+      color: var(--muted);
+      font-size: 0.94rem;
+    }
+
+    .filter-field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      font-size: 0.76rem;
+      font-weight: 800;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .chart-card {
+      min-height: 300px;
+    }
+
+    .trend-chart {
+      margin-top: 8px;
+      padding: 14px 8px 8px;
+      border-radius: 12px;
+      background: linear-gradient(180deg, rgba(14, 116, 144, 0.04), rgba(15, 23, 42, 0.24));
+      border: 1px solid rgba(148, 163, 184, 0.12);
+    }
+
+    .trend-legend {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+      color: var(--muted);
+      font-size: 0.74rem;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+
+    .dot {
+      display: inline-block;
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      margin-right: 7px;
+      vertical-align: middle;
+    }
+
+    .dot.blue { background: #38bdf8; }
+    .dot.red { background: #f87171; }
+    .dot.green { background: #22c55e; }
+
+    .bars-wrap {
+      display: flex;
+      align-items: end;
+      gap: 10px;
+      min-height: 220px;
+      padding: 10px 6px 4px;
+    }
+
+    .trend-bar-group {
+      display: flex;
+      flex: 1;
+      max-width: 70px;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      min-width: 36px;
+      color: var(--muted);
+      font-size: 0.68rem;
+      text-align: center;
+    }
+
+    .mini-bars {
+      display: flex;
+      align-items: end;
+      justify-content: center;
+      width: 100%;
+      height: 160px;
+      gap: 4px;
+      padding: 8px 6px 4px;
+      border-radius: 10px;
+      background: linear-gradient(180deg, rgba(15, 23, 42, 0.5), rgba(56, 189, 248, 0.03));
+      border: 1px solid rgba(148, 163, 184, 0.12);
+    }
+
+    .mini-bar {
+      display: block;
+      width: 100%;
+      min-height: 8px;
+      border-radius: 6px 6px 2px 2px;
+      box-shadow: inset 0 -10px 14px rgba(255,255,255,0.14);
+    }
+
+    .mini-bar.blue { background: linear-gradient(180deg, #7dd3fc, #38bdf8 56%, #0369a1); }
+    .mini-bar.red { background: linear-gradient(180deg, #fca5a5, #f87171 58%, #b91c1c); }
+    .mini-bar.green { background: linear-gradient(180deg, #86efac, #22c55e 58%, #15803d); }
+
+    .chart-shell {
+      display: flex;
+      align-items: flex-end;
+      gap: 12px;
+      min-height: 220px;
+      padding: 12px 10px 6px;
+      border-radius: 16px;
+      background: linear-gradient(180deg, rgba(56,189,248,0.04), rgba(148,163,184,0.04));
+      border: 1px solid rgba(148,163,184,0.16);
+    }
+
+    .bar-chart {
+      display: flex;
+      align-items: flex-end;
+      gap: 12px;
+      min-height: 200px;
+      padding-top: 10px;
+      width: 100%;
+    }
+
+    .bar-group {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      min-width: 46px;
+      color: var(--muted);
+      font-size: 0.72rem;
+    }
+
+    .bar-value {
+      font-size: 0.7rem;
+      color: var(--text-strong);
+      font-weight: 800;
+    }
+
+    .bar-track {
+      width: 100%;
+      height: 120px;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      background: linear-gradient(180deg, rgba(15, 23, 42, 0.72), rgba(125, 211, 252, 0.08));
+      border-radius: 12px;
+      padding: 8px;
+      border: 1px solid rgba(148,163,184,0.2);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.08);
+    }
+
+    .bar-fill {
+      width: 100%;
+      border-radius: 10px 10px 4px 4px;
+      background: linear-gradient(180deg, #67e8f9, #38bdf8 52%, #0284c7);
+      min-height: 8px;
+      box-shadow: inset 0 -12px 18px rgba(255,255,255,0.18);
+    }
+
+    .stacked-bars {
+      display: grid;
+      gap: 12px;
+      margin-top: 8px;
+    }
+
+    .stack-row {
+      display: grid;
+      grid-template-columns: 120px 1fr 60px;
+      align-items: center;
+      gap: 10px;
+      color: var(--muted);
+    }
+
+    .stack-track {
+      height: 14px;
+      border-radius: 999px;
+      overflow: hidden;
+      background: rgba(148,163,184,0.12);
+      border: 1px solid rgba(148,163,184,0.2);
+    }
+
+    .stack-fill {
+      height: 100%;
+      border-radius: inherit;
+    }
+
+    .stack-fill.confirmed { background: linear-gradient(90deg, #22c55e, #4ade80); }
+    .stack-fill.pending { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+    .stack-fill.cancelled { background: linear-gradient(90deg, #f87171, #fda4af); }
+    .stack-fill.healthy { background: linear-gradient(90deg, #10b981, #34d399); }
+    .stack-fill.low { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+    .stack-fill.out { background: linear-gradient(90deg, #ef4444, #f87171); }
+
+    .empty-state {
+      padding: 20px;
+      text-align: center;
+      color: var(--muted);
+      border: 1px dashed rgba(148,163,184,0.25);
+      border-radius: 12px;
+      background: rgba(148, 163, 184, 0.04);
+    }
+
+    @media (max-width: 860px) {
+      .admin-shell { grid-template-columns: 1fr; }
+      .sidebar { padding-bottom: 12px; }
+      .content { padding: 16px; }
+      .filters { flex-direction: column; align-items: stretch; }
+      .stack-row { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="admin-shell">
+    <aside class="sidebar" id="adminSidebar"></aside>
+
+    <main class="content">
+      <div class="page-head">
+        <div>
+          <div class="eyebrow">Revenue intelligence</div>
+          <h1>Net Sales Report</h1>
+        </div>
+        <div class="actions">
+          <button class="secondary" type="button" onclick="location.href='/admin'">Dashboard</button>
+          <button type="button" id="logoutBtn">Logout</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="filters" id="reportFilters">
+          <div class="filter-field">
+            <label for="fromDate">From</label>
+            <input id="fromDate" type="date" />
+          </div>
+          <div class="filter-field">
+            <label for="toDate">To</label>
+            <input id="toDate" type="date" />
+          </div>
+          <div class="filter-field">
+            <label for="paymentMethod">Payment</label>
+            <select id="paymentMethod">
+              <option value="">All</option>
+              <option value="Card">Card</option>
+              <option value="Cash">Cash</option>
+              <option value="Bank Transfer">Bank Transfer</option>
+              <option value="Wallet">Wallet</option>
+            </select>
+          </div>
+          <div class="filter-field">
+            <label for="saleStatus">Sale Status</label>
+            <select id="saleStatus">
+              <option value="">All</option>
+              <option value="Paid">Paid</option>
+              <option value="Partial">Partial</option>
+              <option value="Unpaid">Unpaid</option>
+            </select>
+          </div>
+          <div class="filter-field">
+            <label for="orderStatus">Order Status</label>
+            <select id="orderStatus">
+              <option value="">All</option>
+              <option value="Confirmed">Confirmed</option>
+              <option value="Dispatched">Dispatched</option>
+              <option value="Pending">Pending</option>
+            </select>
+          </div>
+          <div class="filter-field">
+            <label for="searchQuery">Search</label>
+            <input id="searchQuery" type="search" placeholder="Invoice, order, customer" />
+          </div>
+          <div class="filter-field action-stack">
+            <span class="placeholder-label">Actions</span>
+            <div class="button-row">
+              <button type="button" id="applyFiltersBtn">Apply</button>
+              <button type="button" class="secondary" id="resetFiltersBtn">Reset</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="range-chips" id="rangeChips">
+          <button type="button" class="secondary quick-range" data-range="today">Today</button>
+          <button type="button" class="secondary quick-range" data-range="yesterday">Yesterday</button>
+          <button type="button" class="secondary quick-range" data-range="this_week">This Week</button>
+          <button type="button" class="secondary quick-range" data-range="this_month">This Month</button>
+          <button type="button" class="secondary quick-range" data-range="last_month">Last Month</button>
+          <button type="button" class="secondary quick-range" data-range="this_year">This Year</button>
+        </div>
+      </div>
+
+      <div class="report-grid" id="summaryCards"></div>
+
+      <div class="report-cards">
+        <div class="report-card formula-box">
+          <h3>Net Sales Formula</h3>
+          <div class="formula-block">
+            <div class="formula-row"><span>Gross Sales</span><strong id="formulaGross">£0.00</strong></div>
+            <div class="formula-row minus"><span>Less Sale Returns</span><strong id="formulaReturns">£0.00</strong></div>
+            <div class="formula-divider"></div>
+            <div class="formula-row total"><span>Net Sales</span><strong id="formulaNet">£0.00</strong></div>
+          </div>
+        </div>
+
+        <div class="report-card chart-card">
+          <div class="panel-header">
+            <h3>Net Sales Trend</h3>
+            <span class="subtle" id="trendLabel">Last 30 days</span>
+          </div>
+          <div id="trendChart" class="trend-chart"></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header">
+          <h3>Detailed Net Sales Transactions</h3>
+          <span class="subtle" id="resultMeta">0 transactions</span>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Invoice</th>
+                <th>Order</th>
+                <th>Customer</th>
+                <th>Gross Sale</th>
+                <th>Return</th>
+                <th>Net Sale</th>
+                <th>Payment Method</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="reportTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="/admin/sidebar.js"></script>
+  <script>
+    const state = { report: null };
+
+    function formatMoney(value) {
+      return `£${Number(value || 0).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}`;
+    }
+
+    function formatPercent(value) {
+      return `${Number(value || 0).toFixed(2)}%`;
+    }
+
+    function formatDateLabel(value) {
+      if (!value) return '—';
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return value;
+      return date.toLocaleDateString('en-GB');
+    }
+
+    function setDefaultDateRange() {
+      const today = new Date();
+      const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+      const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+      document.getElementById('fromDate').value = firstDay.toISOString().slice(0, 10);
+      document.getElementById('toDate').value = today.toISOString().slice(0, 10);
+    }
+
+    function setRange(rangeKey) {
+      const today = new Date();
+      const to = new Date(today);
+      let from = new Date(today);
+
+      switch (rangeKey) {
+        case 'today':
+          from = new Date(today);
+          break;
+        case 'yesterday':
+          from = new Date(today);
+          from.setDate(today.getDate() - 1);
+          to.setDate(today.getDate() - 1);
+          break;
+        case 'this_week':
+          const day = today.getDay();
+          const offset = (day === 0 ? -6 : 1 - day);
+          from = new Date(today);
+          from.setDate(today.getDate() + offset);
+          break;
+        case 'this_month':
+          from = new Date(today.getFullYear(), today.getMonth(), 1);
+          break;
+        case 'last_month':
+          from = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+          to.setMonth(today.getMonth() - 1);
+          to.setDate(new Date(today.getFullYear(), today.getMonth(), 0).getDate());
+          break;
+        case 'this_year':
+          from = new Date(today.getFullYear(), 0, 1);
+          break;
+        default:
+          setDefaultDateRange();
+          return;
+      }
+
+      document.getElementById('fromDate').value = from.toISOString().slice(0, 10);
+      document.getElementById('toDate').value = to.toISOString().slice(0, 10);
+    }
+
+    function getFilters() {
+      const params = new URLSearchParams();
+      const fromDate = document.getElementById('fromDate').value;
+      const toDate = document.getElementById('toDate').value;
+      const paymentMethod = document.getElementById('paymentMethod').value;
+      const saleStatus = document.getElementById('saleStatus').value;
+      const orderStatus = document.getElementById('orderStatus').value;
+      const search = document.getElementById('searchQuery').value.trim();
+
+      if (fromDate) params.set('from_date', fromDate);
+      if (toDate) params.set('to_date', toDate);
+      if (paymentMethod) params.set('payment_method', paymentMethod);
+      if (saleStatus) params.set('sale_status', saleStatus);
+      if (orderStatus) params.set('order_status', orderStatus);
+      if (search) params.set('search', search);
+
+      return params;
+    }
+
+    async function loadNetSalesReport() {
+      const params = getFilters();
+      const response = await fetch(`/api/reports/net-sales?${params.toString()}`);
+      if (response.status === 401) {
+        window.location.href = '/admin/login.html';
+        return;
+      }
+      const data = await response.json();
+      state.report = data;
+      renderSummary(data.summary || {});
+      renderTrend(data.trend || []);
+      renderTable(data.rows || []);
+    }
+
+    function renderSummary(summary) {
+      const cards = [
+        { label: 'GROSS SALES', value: formatMoney(summary.gross_sales || 0), accent: 'blue', tone: 'main' },
+        { label: 'SALE RETURNS', value: formatMoney(summary.sale_returns || 0), accent: 'red', tone: 'muted' },
+        { label: 'NET SALES', value: formatMoney(summary.net_sales || 0), accent: 'green', tone: 'highlight' },
+        { label: 'RETURN RATE', value: formatPercent(summary.return_rate || 0), accent: 'orange', tone: 'muted' },
+        { label: 'TRANSACTIONS', value: String(summary.transaction_count || 0), accent: 'navy', tone: 'neutral' },
+      ];
+
+      document.getElementById('summaryCards').innerHTML = cards.map((card) => `
+        <div class="stat-card ${card.accent}">
+          <div class="stat-label">${card.label}</div>
+          <div class="stat-value">${card.value}</div>
+        </div>
+      `).join('');
+
+      document.getElementById('formulaGross').textContent = formatMoney(summary.gross_sales || 0);
+      document.getElementById('formulaReturns').textContent = formatMoney(summary.sale_returns || 0);
+      document.getElementById('formulaNet').textContent = formatMoney(summary.net_sales || 0);
+      document.getElementById('resultMeta').textContent = `${summary.transaction_count || 0} transaction${(summary.transaction_count || 0) === 1 ? '' : 's'}`;
+    }
+
+    function renderTrend(trend) {
+      const chart = document.getElementById('trendChart');
+      if (!trend.length) {
+        chart.innerHTML = '<div class="empty-state">No sales data for the selected period.</div>';
+        return;
+      }
+
+      const maxValue = Math.max(1, ...trend.flatMap((entry) => [Number(entry.gross_sales || 0), Number(entry.sale_returns || 0), Number(entry.net_sales || 0)]));
+      chart.innerHTML = `
+        <div class="trend-legend">
+          <span><i class="dot blue"></i>Gross Sales</span>
+          <span><i class="dot red"></i>Returns</span>
+          <span><i class="dot green"></i>Net Sales</span>
+        </div>
+        <div class="bars-wrap">
+          ${trend.map((entry) => {
+            const grossHeight = (Number(entry.gross_sales || 0) / maxValue) * 100;
+            const returnHeight = (Number(entry.sale_returns || 0) / maxValue) * 100;
+            const netHeight = (Number(entry.net_sales || 0) / maxValue) * 100;
+            return `
+              <div class="trend-bar-group">
+                <div class="mini-bars">
+                  <span class="mini-bar blue" style="height:${grossHeight}%"></span>
+                  <span class="mini-bar red" style="height:${returnHeight}%"></span>
+                  <span class="mini-bar green" style="height:${netHeight}%"></span>
+                </div>
+                <small>${new Date(entry.period).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}</small>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      `;
+      document.getElementById('trendLabel').textContent = trend.length > 14 ? 'Recent activity' : 'Selected range';
+    }
+
+    function renderTable(rows) {
+      const tbody = document.getElementById('reportTableBody');
+      if (!rows.length) {
+        tbody.innerHTML = '<tr><td colspan="9"><div class="empty-state">No sales data for this period.</div></td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = rows.map((row) => `
+        <tr>
+          <td>${formatDateLabel(row.invoice_date)}</td>
+          <td>${row.invoice_number || '—'}</td>
+          <td>${row.order_number || '—'}</td>
+          <td>${row.customer_name || 'Walk-in Customer'}</td>
+          <td>${formatMoney(row.gross_sale || 0)}</td>
+          <td>${formatMoney(row.return_amount || 0)}</td>
+          <td>${formatMoney(row.net_sale || 0)}</td>
+          <td>${row.payment_method || 'Cash'}</td>
+          <td><span class="badge ${row.payment_status && row.payment_status.toLowerCase() === 'paid' ? 'success' : row.payment_status && row.payment_status.toLowerCase() === 'partial' ? 'warning' : 'neutral'}">${row.payment_status || 'Unpaid'}</span></td>
+        </tr>
+      `).join('');
+    }
+
+    document.getElementById('applyFiltersBtn').addEventListener('click', loadNetSalesReport);
+    document.getElementById('resetFiltersBtn').addEventListener('click', () => {
+      document.getElementById('paymentMethod').value = '';
+      document.getElementById('saleStatus').value = '';
+      document.getElementById('orderStatus').value = '';
+      document.getElementById('searchQuery').value = '';
+      setDefaultDateRange();
+      loadNetSalesReport();
+    });
+
+    document.querySelectorAll('.quick-range').forEach((button) => {
+      button.addEventListener('click', () => {
+        setRange(button.dataset.range);
+        loadNetSalesReport();
+      });
+    });
+
+    document.getElementById('logoutBtn').addEventListener('click', async () => {
+      await fetch('/api/admin/logout', { method: 'POST' });
+      window.location.href = '/admin/login.html';
+    });
+
+    setDefaultDateRange();
+    loadNetSalesReport();
+  </script>
+</body>
+</html>

@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Audit Trail</title>
+  <link rel="stylesheet" href="/admin/sidebar.css" />
+  <style>
+    body { margin: 0; font-family: Arial, sans-serif; color: #172033; background: #f5f7fa; } .layout { display: grid; grid-template-columns: 240px 1fr; min-height: 100vh; } .content { padding: 28px; } h1 { margin-top: 0; } .panel { overflow-x: auto; background: #fff; border: 1px solid #dbe2ea; border-radius: 8px; padding: 18px; } table { width: 100%; border-collapse: collapse; } th, td { padding: 10px; text-align: left; border-top: 1px solid #e2e8f0; vertical-align: top; } .error { color: #b91c1c; } @media (max-width: 760px) { .layout { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <div class="layout"><aside id="adminSidebar" class="sidebar"></aside><main class="content"><h1>Audit Trail</h1><section class="panel"><p id="message" class="error"></p><table><thead><tr><th>Time</th><th>Actor</th><th>Action</th><th>Entity</th><th>IP</th></tr></thead><tbody id="logs"></tbody></table></section></main></div>
+  <script src="/admin/sidebar.js"></script><script>
+    (async () => { const response = await fetch('/api/admin/audit-logs'); const data = await response.json(); if (!response.ok) { document.getElementById('message').textContent = data.error || 'Unable to load audit logs.'; return; } document.getElementById('logs').innerHTML = data.logs.map((log) => `<tr><td>${log.timestamp}</td><td>${log.actor_email || 'System'}</td><td>${log.action}</td><td>${log.entity_type} #${log.entity_id}</td><td>${log.ip_address || '-'}</td></tr>`).join(''); })();
+  </script>
+</body>
+</html>

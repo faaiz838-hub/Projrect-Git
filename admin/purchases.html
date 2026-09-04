@@ -1,0 +1,2020 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Purchase Management</title>
+  <style>
+    :root {
+      --primary: #0284c7;
+      --primary-dark: #0369a1;
+      --bg: #f5f7fb;
+      --panel: rgba(255,255,255,0.94);
+      --text: #0f172a;
+      --muted: #64748b;
+      --border: rgba(148, 163, 184, 0.22);
+      --warning: #f59e0b;
+      --success: #16a34a;
+      --danger: #ef4444;
+      --shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background:
+        radial-gradient(circle at top left, rgba(14, 165, 233, 0.12), transparent 26%),
+        radial-gradient(circle at bottom right, rgba(14, 116, 144, 0.1), transparent 28%),
+        var(--bg);
+      color: var(--text);
+      font-family: Arial, sans-serif;
+    }
+    .admin-shell {
+      display: grid;
+      grid-template-columns: 240px 1fr;
+      min-height: 100vh;
+    }
+    .sidebar {
+      background: linear-gradient(180deg, rgba(7, 24, 39, 0.98), rgba(10, 19, 30, 0.96));
+      color: white;
+      padding: 24px 16px;
+      border-right: 1px solid rgba(148, 163, 184, 0.14);
+      box-shadow: inset -1px 0 0 rgba(148,163,184,0.08);
+    }
+    .brand {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 2px;
+      font-size: 1.32rem;
+      font-weight: 800;
+      margin-bottom: 26px;
+      padding: 0 10px 14px;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.14);
+      letter-spacing: 0.02em;
+      line-height: 1.08;
+      max-width: 148px;
+    }
+    .brand span { display: block; }
+    .nav {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .nav a {
+      color: rgba(226, 232, 240, 0.95);
+      text-decoration: none;
+      padding: 12px 14px;
+      border-radius: 12px;
+      opacity: 0.9;
+      display: block;
+      background: rgba(15, 23, 42, 0.35);
+      border: 1px solid transparent;
+      font-size: 0.96rem;
+      line-height: 1.2;
+      font-weight: 700;
+      text-transform: none;
+      transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+    }
+    .nav a:hover {
+      transform: translateX(2px);
+      background: rgba(56, 189, 248, 0.06);
+      border-color: rgba(56, 189, 248, 0.25);
+    }
+    .nav a.active {
+      background: linear-gradient(90deg, rgba(2, 132, 199, 0.16), rgba(14, 116, 144, 0.08));
+      border-color: rgba(96, 165, 250, 0.42);
+      box-shadow: inset 0 0 0 1px rgba(125,211,252,0.15);
+      font-weight: 800;
+    }
+    .content {
+      padding: 12px 16px 18px;
+      background: linear-gradient(180deg, rgba(15, 23, 42, 0.02), rgba(15, 23, 42, 0.01));
+    }
+    .page-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 8px;
+      flex-wrap: wrap;
+      padding: 10px 12px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, rgba(255,255,255,0.96), rgba(240,249,255,0.82));
+      border: 1px solid rgba(148,163,184,0.18);
+      box-shadow: 0 14px 28px rgba(15,23,42,0.06);
+    }
+    .eyebrow {
+      font-size: 0.75rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+    h1, h2, h3, h4 { margin-top: 0; }
+    .actions {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    button {
+      border: none;
+      border-radius: 8px;
+      padding: 8px 12px;
+      font-weight: 700;
+      cursor: pointer;
+      background: var(--primary);
+      color: white;
+    }
+    button.secondary { background: #e2e8f0; color: var(--text); }
+    button.warning { background: var(--warning); }
+    button.danger { background: var(--danger); }
+    button.small { padding: 8px 10px; font-size: 0.8rem; }
+    .module-tabs {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-bottom: 8px;
+    }
+    .module-tab {
+      background: #e2e8f0;
+      color: var(--text);
+      border: 1px solid transparent;
+      padding: 6px 10px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 0.76rem;
+    }
+    .module-tab.active {
+      background: var(--primary);
+      color: white;
+      box-shadow: var(--shadow);
+    }
+    .module-panel {
+      display: none;
+    }
+    .module-panel.active {
+      display: block;
+    }
+    #erpToastContainer {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      z-index: 2000;
+      pointer-events: none;
+    }
+    .erp-toast {
+      min-width: 260px;
+      max-width: 360px;
+      padding: 12px 16px;
+      border-radius: 12px;
+      color: #fff;
+      font-weight: 700;
+      box-shadow: 0 12px 30px rgba(15, 23, 42, 0.18);
+      opacity: 0;
+      transform: translateX(18px);
+      transition: all 0.2s ease;
+      pointer-events: auto;
+    }
+    .erp-toast.visible { opacity: 1; transform: translateX(0); }
+    .erp-toast.success { background: linear-gradient(135deg, #166534, #22c55e); }
+    .erp-toast.error { background: linear-gradient(135deg, #991b1b, #ef4444); }
+    .erp-toast.warning { background: linear-gradient(135deg, #92400e, #f59e0b); }
+    .erp-toast.info { background: linear-gradient(135deg, #0369a1, #0284c7); }
+    .panel {
+      background: linear-gradient(180deg, rgba(255,255,255,0.96), rgba(248,250,252,0.94));
+      border: 1px solid rgba(148,163,184,0.18);
+      border-radius: 12px;
+      box-shadow: var(--shadow);
+      padding: 8px 10px 10px;
+      margin-top: 8px;
+    }
+    .panel-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-bottom: 6px;
+    }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+      gap: 6px;
+      margin-bottom: 6px;
+    }
+    .stat-card {
+      border: 1px solid var(--border);
+      background: linear-gradient(135deg, #f8fbff, #ffffff);
+      border-radius: 10px;
+      padding: 8px 10px;
+    }
+    .stat-label {
+      color: var(--muted);
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+    .stat-value {
+      font-size: 1.35rem;
+      font-weight: 800;
+    }
+    .hidden { display: none !important; }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+      gap: 5px 7px;
+      margin-bottom: 6px;
+    }
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      color: var(--muted);
+      font-size: 0.72rem;
+    }
+    .field input, .field select, .field textarea {
+      width: 100%;
+      padding: 6px 8px;
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      font-size: 0.76rem;
+      background: white;
+      font-family: inherit;
+      transition: border-color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+    }
+    .field textarea { min-height: 90px; resize: vertical; }
+    .field.invalid input,
+    .field.invalid select,
+    .field.invalid textarea {
+      border-color: rgba(239, 68, 68, 0.7);
+      background: rgba(254, 242, 242, 0.9);
+      box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.08);
+    }
+    .batch-form-message {
+      display: none;
+      margin-bottom: 12px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      font-size: 0.9rem;
+      font-weight: 700;
+      line-height: 1.4;
+      border: 1px solid transparent;
+    }
+    .batch-form-message.visible {
+      display: block;
+    }
+    .batch-form-message.error {
+      background: rgba(239, 68, 68, 0.08);
+      color: #991b1b;
+      border-color: rgba(239, 68, 68, 0.2);
+    }
+    .batch-form-message.success {
+      background: rgba(34, 197, 94, 0.08);
+      color: #166534;
+      border-color: rgba(34, 197, 94, 0.2);
+    }
+    .required { color: var(--danger); }
+    .line-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      margin-top: 4px;
+      margin-bottom: 6px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      background: rgba(255,255,255,0.7);
+    }
+    .line-table th, .line-table td {
+      text-align: left;
+      padding: 5px 6px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+      font-size: 0.74rem;
+    }
+    .line-table th {
+      background: linear-gradient(180deg, #f8fafc 0%, #eef6ff 100%);
+      color: var(--muted);
+      font-size: 0.72rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+    }
+    table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      background: rgba(255,255,255,0.72);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+    th, td {
+      text-align: left;
+      padding: 7px 6px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+      font-size: 0.74rem;
+      color: var(--text);
+    }
+    th {
+      background: linear-gradient(180deg, #f8fafc 0%, #eef6ff 100%);
+      font-size: 0.66rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      font-weight: 800;
+    }
+    tbody td {
+      background: rgba(255,255,255,0.82);
+    }
+    tbody tr:nth-child(even) td {
+      background: rgba(248,250,252,0.9);
+    }
+    tbody tr:hover td {
+      background: linear-gradient(90deg, rgba(14,165,233,0.06), rgba(59,130,246,0.04));
+      box-shadow: inset 0 0 0 1px rgba(14,165,233,0.05);
+    }
+    .pill {
+      display: inline-block;
+      padding: 5px 9px;
+      border-radius: 999px;
+      font-size: 0.72rem;
+      font-weight: 700;
+    }
+    .pill.received, .pill.closed, .pill.approved { background: #dcfce7; color: #166534; }
+    .pill.draft, .pill.pending { background: #fef3c7; color: #92400e; }
+    .muted { color: var(--muted); }
+    .toolbar {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-bottom: 8px;
+    }
+    .search-box {
+      width: 260px;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      padding: 10px 12px;
+      font-size: 0.95rem;
+    }
+    .supplier-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .supplier-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 12px;
+      background: #f8fafc;
+    }
+    .supplier-meta { font-size: 0.86rem; color: var(--muted); }
+    .mini-actions { display: flex; gap: 8px; }
+    @media (max-width: 860px) {
+      .admin-shell { grid-template-columns: 1fr; }
+      .sidebar { padding-bottom: 12px; }
+      .content { padding: 16px; }
+      .search-box { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <div class="admin-shell">
+    <aside class="sidebar" id="adminSidebar"></aside>
+
+    <main class="content">
+      <div class="page-head">
+        <div>
+          <div class="eyebrow">Procurement</div>
+          <h1>Purchase Management</h1>
+        </div>
+        <div class="actions">
+          <button class="secondary" type="button" onclick="location.href='/admin'">Dashboard</button>
+          <button type="button" id="logoutBtn">Logout</button>
+        </div>
+      </div>
+
+      <div class="module-tabs">
+        <button class="module-tab active" data-module="invoices">Purchase Invoices</button>
+        <button class="module-tab" data-module="returns">Purchase Returns</button>
+        <button class="module-tab" data-module="suppliers">Supplier List</button>
+        <button class="module-tab" data-module="reports">Reports</button>
+        <button class="module-tab" data-module="batches">Batch List</button>
+      </div>
+
+      <section id="module-invoices" class="module-panel active">
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-label">Total Purchases</div>
+            <div class="stat-value" id="purchasesTotalValue">£0.00</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Invoices</div>
+            <div class="stat-value" id="purchaseInvoiceCount">0</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Pending</div>
+            <div class="stat-value" id="purchasePendingValue">£0.00</div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <h3>Purchase Invoice Register</h3>
+            <div class="mini-actions">
+              <button id="togglePurchaseForm" type="button">Add New Purchase</button>
+            </div>
+          </div>
+
+          <form id="purchaseForm" class="hidden">
+            <div class="grid">
+              <div class="field">
+                <label>Supplier <span class="required required-mark">*</span></label>
+                <select id="purchaseSupplierSelect" required></select>
+              </div>
+              <div class="field">
+                <label>Supplier invoice No</label>
+                <input id="purchaseInvoiceNumber" type="text" placeholder="Supplier invoice no" />
+              </div>
+              <div class="field">
+                <label>Purchase Date<span class="required-mark">*</span></label>
+                <input id="purchaseDate" type="date" required />
+              </div>
+              <div class="field">
+                <label>Notes</label>
+                <input id="purchaseNotes" type="text" placeholder="Optional comments" />
+              </div>
+            </div>
+
+            <div class="grid">
+              <div class="field">
+                <label>Product</label>
+                <select id="purchaseProductSelect"></select>
+              </div>
+              <div class="field">
+                <label>Batch Number</label>
+                <select id="purchaseBatchSelect"></select>
+              </div>
+              <div class="field">
+                <label>Expiry Date</label>
+                <input id="purchaseExpiryDate" type="text" inputmode="numeric" maxlength="8" placeholder="DD-MM-YY" readonly />
+              </div>
+              <div class="field">
+                <label>Quantity</label>
+                <input id="purchaseQty" type="number" min="1" value="1" />
+              </div>
+              <div class="field">
+                <label>Unit Cost</label>
+                <input id="purchaseRate" type="number" min="0" step="0.01" value="0" />
+              </div>
+              <div class="field">
+                <label>Tax</label>
+                <input id="purchaseTax" type="number" min="0" step="0.01" value="0" />
+              </div>
+              <div class="field">
+                <label>Discount</label>
+                <input id="purchaseDiscount" type="number" min="0" step="0.01" value="0" />
+              </div>
+              <div class="field" style="justify-content:flex-end;">
+                <label>&nbsp;</label>
+                <button type="button" class="secondary" id="addPurchaseLineBtn">Add Line</button>
+              </div>
+            </div>
+
+            <table class="line-table" id="purchaseLineTable">
+              <thead>
+                <tr>
+                  <th>Product</th>
+                  <th>Batch</th>
+                  <th>Expiry</th>
+                  <th>Qty</th>
+                  <th>Unit Cost</th>
+                  <th>Tax</th>
+                  <th>Discount</th>
+                  <th>Line Total</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="purchaseLineBody"></tbody>
+            </table>
+
+            <div class="actions">
+              <button type="submit">Save Purchase Invoice</button>
+              <button type="button" class="secondary" id="cancelPurchaseForm">Cancel</button>
+            </div>
+          </form>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Invoice No.</th>
+                  <th>Supplier</th>
+                  <th>Purchase Date</th>
+                  <th>Total</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+                <tr class="table-filter-row" id="purchaseFilterRow">
+                  <th><input type="text" data-filter-field="purchase_number" placeholder="Filter invoice" /></th>
+                  <th><input type="text" data-filter-field="supplier_name" placeholder="Filter supplier" /></th>
+                  <th><input type="text" data-filter-field="purchase_date" placeholder="Filter date" /></th>
+                  <th><input type="text" data-filter-field="total" placeholder="Filter total" /></th>
+                  <th><input type="text" data-filter-field="status" placeholder="Filter status" /></th>
+                  <th><input type="text" data-filter-field="actions" placeholder="Filter action" style="visibility:hidden;" aria-label="Action filter" /></th>
+                </tr>
+              </thead>
+              <tbody id="purchaseTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section id="module-returns" class="module-panel">
+        <div class="panel">
+          <div class="panel-head">
+            <h3>Purchase Returns</h3>
+          </div>
+
+          <form id="purchaseReturnForm">
+            <div class="grid">
+              <div class="field">
+                <label>Purchase Invoice Number <span class="required required-mark">*</span></label>
+                <select id="returnPurchaseSelect" required></select>
+              </div>
+              <div class="field">
+                <label>Supplier</label>
+                <input id="returnSupplierInput" type="text" readonly placeholder="Supplier name" />
+              </div>
+              <div class="field">
+                <label>Return Date<span class="required-mark">*</span></label>
+                <input id="returnDate" type="date" required />
+              </div>
+              <div class="field">
+                <label>Reason<span class="required-mark">*</span></label>
+                <input id="returnReason" type="text" placeholder="Damaged / expired / wrong item" required />
+              </div>
+            </div>
+
+            <div class="grid">
+              <div class="field">
+                <label>Product</label>
+                <select id="returnProductSelect"></select>
+              </div>
+              <div class="field">
+                <label>Quantity</label>
+                <input id="returnQty" type="number" min="1" value="1" required />
+              </div>
+              <div class="field">
+                <label>Unit Cost</label>
+                <input id="returnRate" type="number" min="0" step="0.01" value="0" required />
+              </div>
+              <div class="field">
+                <label>Return Amount</label>
+                <input id="returnAmount" type="number" min="0" step="0.01" value="0" readonly />
+              </div>
+            </div>
+
+            <div class="actions">
+              <button type="submit">Save Purchase Return</button>
+            </div>
+          </form>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <h3>Return Register</h3>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Return No.</th>
+                <th>Invoice No.</th>
+                <th>Supplier</th>
+                <th>Date</th>
+                <th>Total</th>
+                <th>Status</th>
+                <th>Print</th>
+              </tr>
+            </thead>
+            <tbody id="purchaseReturnTableBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="module-suppliers" class="module-panel">
+        <div class="panel">
+          <div class="panel-head">
+            <h3>Supplier List</h3>
+            <button id="toggleSupplierForm" type="button">Add Supplier</button>
+          </div>
+
+          <form id="supplierForm" class="hidden">
+            <div class="grid">
+              <div class="field">
+                <label>Supplier Name <span class="required required-mark">*</span></label>
+                <input name="name" type="text" required />
+              </div>
+              <div class="field">
+                <label>Company</label>
+                <input name="company_name" type="text" />
+              </div>
+              <div class="field">
+                <label>Phone</label>
+                <input name="phone" type="text" />
+              </div>
+              <div class="field">
+                <label>Email</label>
+                <input name="email" type="email" />
+              </div>
+              <div class="field" style="grid-column: 1 / -1;">
+                <label>Address</label>
+                <textarea name="address"></textarea>
+              </div>
+            </div>
+            <div class="actions">
+              <button type="submit">Save Supplier</button>
+              <button type="button" class="secondary" id="cancelSupplierForm">Cancel</button>
+            </div>
+          </form>
+
+          <div class="supplier-list" id="supplierList"></div>
+        </div>
+      </section>
+
+      <section id="module-reports" class="module-panel">
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-label">Gross Purchases</div>
+            <div class="stat-value" id="reportGrossPurchases">£0.00</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Purchase Returns</div>
+            <div class="stat-value" id="reportReturnsValue">£0.00</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Suppliers</div>
+            <div class="stat-value" id="reportSupplierCount">0</div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <h3>Procurement Report Summary</h3>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Metric</th>
+                <th>Value</th>
+              </tr>
+            </thead>
+            <tbody id="reportTableBody"></tbody>
+          </table>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <h3>Item Batch Ledger</h3>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Product</th>
+                <th>Batch</th>
+                <th>Expiry</th>
+                <th>Available</th>
+                <th>Total In</th>
+                <th>Total Out</th>
+                <th>Cost</th>
+              </tr>
+            </thead>
+            <tbody id="batchLedgerTableBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="module-batches" class="module-panel">
+        <div class="panel">
+          <div class="panel-head">
+            <h3>Batch List</h3>
+            <button id="toggleBatchForm" class="secondary" type="button">Add Batch</button>
+          </div>
+
+          <form id="batchForm" class="hidden" style="margin-bottom: 18px;">
+            <div id="batchFormMessage" class="batch-form-message" role="alert" aria-live="polite"></div>
+            <div class="grid">
+              <div class="field" style="grid-column: 1 / -1;">
+                <label>Batch Number <span class="required required-mark">*</span></label>
+                <input id="batchNumberInput" type="text" required placeholder="BATCH-001" />
+              </div>
+              <div class="field" style="grid-column: 1 / -1;">
+                <label>Expiry Date <span class="required required-mark">*</span></label>
+                <input id="batchExpiryInput" type="text" inputmode="numeric" maxlength="8" placeholder="DD-MM-YY" required />
+              </div>
+            </div>
+            <div class="actions">
+              <button type="button" id="saveBatchBtn">Save Batch</button>
+              <button type="button" class="secondary" id="cancelBatchForm">Cancel</button>
+            </div>
+          </form>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Product</th>
+                  <th>Batch</th>
+                  <th>Expiry</th>
+                  <th>Available</th>
+                  <th>Initial Qty</th>
+                  <th>Cost</th>
+                </tr>
+              </thead>
+              <tbody id="batchListTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="/admin/sidebar.js"></script>
+  <script>
+    const state = { purchaseLines: [], suppliers: [], purchases: [], returns: [], products: [] };
+
+    function formatMoney(value) {
+      return `£${Number(value || 0).toFixed(2)}`;
+    }
+
+    function normalizeBatchExpiryDate(value) {
+      const raw = String(value ?? '').trim();
+      if (!raw) return '';
+
+      const isoMatch = raw.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+      if (isoMatch) {
+        const [, year, month, day] = isoMatch;
+        return `${day}-${month}-${String(year).slice(-2)}`;
+      }
+
+      const legacyMatch = raw.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{2,4})$/);
+      if (!legacyMatch) {
+        throw new Error('Expiry date must be in DD-MM-YY format.');
+      }
+
+      let day = Number(legacyMatch[1]);
+      let month = Number(legacyMatch[2]);
+      let year = Number(legacyMatch[3]);
+      if (year < 100) {
+        year += 2000;
+      }
+      if (day < 1 || day > 31 || month < 1 || month > 12) {
+        throw new Error('Expiry date must be a valid calendar date.');
+      }
+
+      return `${String(day).padStart(2, '0')}-${String(month).padStart(2, '0')}-${String(year).slice(-2)}`;
+    }
+
+    function bindBatchExpiryMask(inputId) {
+      const input = document.getElementById(inputId);
+      if (!input) return;
+
+      input.addEventListener('input', (event) => {
+        let value = event.target.value.replace(/\D/g, '').slice(0, 6);
+        if (value.length > 2) {
+          value = `${value.slice(0, 2)}-${value.slice(2)}`;
+        }
+        if (value.length > 5) {
+          value = `${value.slice(0, 5)}-${value.slice(5)}`;
+        }
+        event.target.value = value;
+      });
+    }
+
+    function showModule(name) {
+      document.querySelectorAll('.module-tab').forEach((tab) => {
+        tab.classList.toggle('active', tab.dataset.module === name);
+      });
+      document.querySelectorAll('.module-panel').forEach((panel) => {
+        panel.classList.toggle('active', panel.id === `module-${name}`);
+      });
+    }
+
+    function setPurchaseFormVisible(visible) {
+      document.getElementById('purchaseForm').classList.toggle('hidden', !visible);
+    }
+
+    function setSupplierFormVisible(visible) {
+      document.getElementById('supplierForm').classList.toggle('hidden', !visible);
+    }
+
+    function setBatchFormVisible(visible) {
+      document.getElementById('batchForm').classList.toggle('hidden', !visible);
+      if (!visible) {
+        clearBatchFormMessage();
+      }
+    }
+
+    function clearBatchFormMessage() {
+      const messageBox = document.getElementById('batchFormMessage');
+      if (!messageBox) return;
+      messageBox.className = 'batch-form-message';
+      messageBox.textContent = '';
+    }
+
+    function showBatchFormMessage(message, type = 'error') {
+      const messageBox = document.getElementById('batchFormMessage');
+      if (!messageBox) return;
+      messageBox.textContent = message;
+      messageBox.className = `batch-form-message visible ${type}`;
+    }
+
+    function setBatchFieldState(inputId, isValid) {
+      const field = document.getElementById(inputId)?.closest('.field');
+      if (!field) return;
+      field.classList.toggle('invalid', !isValid);
+    }
+
+    function calcLineTotal(qty, rate, tax, discount) {
+      return ((Number(qty || 0) * Number(rate || 0)) + Number(tax || 0) - Number(discount || 0));
+    }
+
+    function resetSmartSearchSelection(select) {
+      if (!select) return;
+
+      const hasBlankOption = Array.from(select.options).some((option) => String(option.value) === '');
+      if (!hasBlankOption) {
+        const blankOption = document.createElement('option');
+        blankOption.value = '';
+        blankOption.textContent = 'Select...';
+        select.insertBefore(blankOption, select.options[0] || null);
+      }
+
+      select.value = '';
+      select.selectedIndex = -1;
+      select.dispatchEvent(new Event('change', { bubbles: true }));
+
+      const wrapper = select.closest('.smart-search-select');
+      const searchInput = wrapper?.querySelector('.smart-search-input');
+      const menu = wrapper?.querySelector('.smart-search-menu');
+
+      if (searchInput) {
+        searchInput.value = '';
+        searchInput.dispatchEvent(new Event('input', { bubbles: true }));
+      }
+
+      if (menu) {
+        menu.classList.remove('open');
+      }
+    }
+
+    function renderPurchaseLines() {
+      const tbody = document.getElementById('purchaseLineBody');
+      if (!state.purchaseLines.length) {
+        tbody.innerHTML = '<tr><td colspan="9" class="muted">No purchase lines added yet.</td></tr>';
+        return;
+      }
+      tbody.innerHTML = state.purchaseLines.map((line, index) => `
+        <tr>
+          <td>${line.productName}</td>
+          <td>${line.batchNumber || 'New batch'}</td>
+          <td>${line.expiryDate || '—'}</td>
+          <td>${line.quantity}</td>
+          <td>${formatMoney(line.unitCost)}</td>
+          <td>${formatMoney(line.tax)}</td>
+          <td>${formatMoney(line.discount)}</td>
+          <td>${formatMoney(line.lineTotal)}</td>
+          <td><button type="button" class="small danger" data-line-index="${index}" data-remove-line="true">Remove</button></td>
+        </tr>
+      `).join('');
+    }
+
+    function populatePurchaseBatchSelect(productId) {
+      const batchSelect = document.getElementById('purchaseBatchSelect');
+      batchSelect.innerHTML = '<option value="">Select batch</option>';
+      document.getElementById('purchaseExpiryDate').value = '';
+
+      fetch('/api/product-batches')
+        .then((response) => response.ok ? response.json() : { batches: [] })
+        .then((data) => {
+          const batches = Array.isArray(data.batches) ? data.batches : [];
+          batchSelect.innerHTML = '<option value="">Select batch</option>' + batches.map((batch) => {
+            const productLabel = batch.product_name ? ` (${batch.product_name})` : '';
+            return `<option value="${batch.id}" data-expiry="${encodeURIComponent(batch.expiry_date || '')}" data-batch-number="${encodeURIComponent(batch.batch_number || '')}">${batch.batch_number}${productLabel}</option>`;
+          }).join('');
+
+          if (batches.length && batchSelect.dataset.selectedBatchId) {
+            batchSelect.value = batchSelect.dataset.selectedBatchId;
+          }
+
+          if (!batchSelect.value) {
+            document.getElementById('purchaseExpiryDate').value = '';
+          }
+
+          if (typeof window.applySmartSearch === 'function') {
+            window.applySmartSearch(batchSelect);
+          }
+        })
+        .catch(() => {
+          batchSelect.innerHTML = '<option value="">Select batch</option>';
+          document.getElementById('purchaseExpiryDate').value = '';
+        });
+    }
+
+    function applySmartSearchToPurchaseSelects() {
+      const selectIds = [
+        'purchaseSupplierSelect',
+        'purchaseProductSelect',
+        'purchaseBatchSelect',
+        'returnPurchaseSelect',
+        'returnProductSelect'
+      ];
+
+      selectIds.forEach((id) => {
+        const select = document.getElementById(id);
+        if (!select || !window.applySmartSearch) return;
+        window.applySmartSearch(select);
+      });
+    }
+
+    function addPurchaseLine() {
+      const productSelect = document.getElementById('purchaseProductSelect');
+      const productId = Number(productSelect.value);
+      const product = state.products.find((item) => Number(item.id) === productId);
+      const quantity = Number(document.getElementById('purchaseQty').value || 0);
+      const unitCost = Number(document.getElementById('purchaseRate').value || 0);
+      const tax = Number(document.getElementById('purchaseTax').value || 0);
+      const discount = Number(document.getElementById('purchaseDiscount').value || 0);
+      const batchId = Number(document.getElementById('purchaseBatchSelect').value || 0);
+      const batchNumber = (document.getElementById('purchaseBatchSelect').selectedOptions[0]?.text || '').trim();
+      const expiryDate = document.getElementById('purchaseExpiryDate').value.trim();
+
+      if (!product || quantity <= 0 || unitCost < 0) {
+        showToast('Please choose a valid product, quantity, and unit cost.', 'warning');
+        return;
+      }
+
+      const lineTotal = calcLineTotal(quantity, unitCost, tax, discount);
+      state.purchaseLines.push({ productId, productName: product.name, batchId, batchNumber, expiryDate, quantity, unitCost, tax, discount, lineTotal });
+      renderPurchaseLines();
+
+      resetSmartSearchSelection(productSelect);
+      resetSmartSearchSelection(document.getElementById('purchaseBatchSelect'));
+
+      document.getElementById('purchaseQty').value = 1;
+      document.getElementById('purchaseRate').value = 0;
+      document.getElementById('purchaseTax').value = 0;
+      document.getElementById('purchaseDiscount').value = 0;
+      document.getElementById('purchaseExpiryDate').value = '';
+    }
+
+    function clearPurchaseLines() {
+      state.purchaseLines = [];
+      renderPurchaseLines();
+    }
+
+    function extractErrorMessage(payload, fallback = 'Request failed') {
+      if (!payload) return fallback;
+
+      if (typeof payload === 'string') {
+        const plainText = payload.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
+        return plainText || fallback;
+      }
+
+      if (payload && typeof payload === 'object') {
+        return payload.message || payload.error || payload.errorMessage || fallback;
+      }
+
+      return String(payload) || fallback;
+    }
+
+    async function fetchJson(url, options = {}) {
+      const response = await fetch(url, options);
+      const rawText = await response.text();
+      let payload = rawText;
+
+      if (rawText) {
+        try {
+          payload = JSON.parse(rawText);
+        } catch (error) {
+          payload = rawText;
+        }
+      }
+
+      if (!response.ok) {
+        const message = extractErrorMessage(payload, response.statusText || 'Request failed');
+        const error = new Error(message);
+        error.response = { data: payload, status: response.status };
+        throw error;
+      }
+
+      return { response, data: payload };
+    }
+
+    function showToast(message, type = 'success') {
+      let container = document.getElementById('erpToastContainer');
+      if (!container) {
+        container = document.createElement('div');
+        container.id = 'erpToastContainer';
+        document.body.appendChild(container);
+      }
+      const toast = document.createElement('div');
+      toast.className = `erp-toast visible ${type}`;
+      toast.textContent = message;
+      container.appendChild(toast);
+      setTimeout(() => toast.classList.add('visible'), 20);
+      setTimeout(() => {
+        toast.classList.remove('visible');
+        setTimeout(() => toast.remove(), 200);
+      }, 3000);
+    }
+
+    async function ensureAdminSession() {
+      const response = await fetch('/api/admin/me');
+      const data = await response.json();
+      if (!response.ok || !data.authenticated) {
+        window.location.href = '/admin/login.html';
+        return false;
+      }
+      return true;
+    }
+
+    async function loadCatalogData() {
+      const [supplierRes, productRes] = await Promise.all([
+        fetch('/api/suppliers'),
+        fetch('/api/products')
+      ]);
+
+      if (supplierRes.status === 401 || productRes.status === 401) {
+        window.location.href = '/admin/login.html';
+        return;
+      }
+
+      const supplierData = await supplierRes.json();
+      const productData = await productRes.json();
+      state.suppliers = supplierData.suppliers || [];
+      state.products = productData.products || [];
+
+      const purchaseSupplierSelect = document.getElementById('purchaseSupplierSelect');
+      const returnPurchaseSelect = document.getElementById('returnPurchaseSelect');
+      const purchaseProductSelect = document.getElementById('purchaseProductSelect');
+      const returnProductSelect = document.getElementById('returnProductSelect');
+
+      purchaseSupplierSelect.innerHTML = '<option value="">Select supplier</option>' + state.suppliers.map((supplier) => `<option value="${supplier.id}">${supplier.name}</option>`).join('');
+      purchaseProductSelect.innerHTML = '<option value="">Select product</option>' + state.products.map((product) => `<option value="${product.id}">${product.name}</option>`).join('');
+      returnProductSelect.innerHTML = '<option value="">Select product</option>' + state.products.map((product) => `<option value="${product.id}">${product.name}</option>`).join('');
+      populatePurchaseBatchSelect(Number(purchaseProductSelect.value || 0));
+      applySmartSearchToPurchaseSelects();
+
+      const purchaseOptions = state.purchases.length ? state.purchases.map((purchase) => `<option value="${purchase.id}">${purchase.purchase_number}</option>`).join('') : '<option value="">No purchase invoice available</option>';
+      returnPurchaseSelect.innerHTML = purchaseOptions;
+      applySmartSearchToPurchaseSelects();
+    }
+
+    async function loadBatches() {
+      const response = await fetch('/api/product-batches');
+      if (response.status === 401) {
+        window.location.href = '/admin/login.html';
+        return;
+      }
+      const data = await response.json();
+      const rows = data.batches || [];
+      const batchListBody = document.getElementById('batchListTableBody');
+      if (!batchListBody) return;
+      batchListBody.innerHTML = rows.length ? rows.map((row) => `
+        <tr>
+          <td>${row.product_name || row.product_id || '—'}</td>
+          <td>${row.batch_number || '—'}</td>
+          <td>${row.expiry_date || '—'}</td>
+          <td>${Number(row.available_quantity || 0)}</td>
+          <td>${Number(row.initial_quantity || 0)}</td>
+          <td>${formatMoney(row.purchase_cost || 0)}</td>
+        </tr>
+      `).join('') : '<tr><td colspan="6" class="muted">No batches found.</td></tr>';
+    }
+
+    function getPurchaseTableFilteredRows() {
+      const filterInputs = Array.from(document.querySelectorAll('#purchaseFilterRow input[data-filter-field]'));
+      const activeFilters = {};
+
+      filterInputs.forEach((input) => {
+        const field = input.dataset.filterField;
+        activeFilters[field] = (input.value || '').trim().toLowerCase();
+      });
+
+      return state.purchases.filter((purchase) => {
+        const purchaseNumber = String(purchase.purchase_number || '').toLowerCase();
+        const supplierName = String(purchase.supplier_name || '').toLowerCase();
+        const purchaseDate = new Date(purchase.purchase_date).toLocaleDateString().toLowerCase();
+        const total = String(formatMoney(purchase.total)).toLowerCase();
+        const status = String(purchase.status || 'Draft').toLowerCase();
+
+        return (
+          (!activeFilters.purchase_number || purchaseNumber.includes(activeFilters.purchase_number)) &&
+          (!activeFilters.supplier_name || supplierName.includes(activeFilters.supplier_name)) &&
+          (!activeFilters.purchase_date || purchaseDate.includes(activeFilters.purchase_date)) &&
+          (!activeFilters.total || total.includes(activeFilters.total)) &&
+          (!activeFilters.status || status.includes(activeFilters.status))
+        );
+      });
+    }
+
+    function renderPurchaseTableRows() {
+      const filteredPurchases = getPurchaseTableFilteredRows();
+      const body = document.getElementById('purchaseTableBody');
+      body.innerHTML = filteredPurchases.map((purchase) => `
+        <tr>
+          <td>${purchase.purchase_number}</td>
+          <td>${purchase.supplier_name || 'Supplier'}</td>
+          <td>${new Date(purchase.purchase_date).toLocaleDateString()}</td>
+          <td>${formatMoney(purchase.total)}</td>
+          <td><span class="pill ${String(purchase.status || 'Draft').toLowerCase()}">${purchase.status || 'Draft'}</span></td>
+          <td>
+            <div class="mini-actions">
+              <button type="button" class="small secondary" data-print-purchase="${purchase.id}">Print</button>
+            </div>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function bindPurchaseFilterInputs() {
+      document.querySelectorAll('#purchaseFilterRow input[data-filter-field]').forEach((input) => {
+        input.addEventListener('input', renderPurchaseTableRows);
+      });
+    }
+
+    async function loadPurchases() {
+      const response = await fetch('/api/purchases');
+      if (response.status === 401) {
+        window.location.href = '/admin/login.html';
+        return;
+      }
+      const data = await response.json();
+      state.purchases = data.purchases || [];
+      renderPurchaseTableRows();
+
+      document.getElementById('purchasesTotalValue').textContent = formatMoney(state.purchases.reduce((sum, purchase) => sum + Number(purchase.total || 0), 0));
+      document.getElementById('purchaseInvoiceCount').textContent = String(state.purchases.length);
+      document.getElementById('purchasePendingValue').textContent = formatMoney(state.purchases.filter((p) => String(p.status || 'Draft').toLowerCase() !== 'received').reduce((sum, purchase) => sum + Number(purchase.total || 0), 0));
+
+      const returnPurchaseSelect = document.getElementById('returnPurchaseSelect');
+      returnPurchaseSelect.innerHTML = state.purchases.map((purchase) => `<option value="${purchase.id}">${purchase.purchase_number}</option>`).join('');
+      selectPurchaseInvoiceForReturn();
+    }
+
+    async function loadPurchaseReturns() {
+      const response = await fetch('/api/purchase-returns');
+      if (response.status === 401) {
+        window.location.href = '/admin/login.html';
+        return;
+      }
+      const data = await response.json();
+      state.returns = data.purchase_returns || [];
+      const tbody = document.getElementById('purchaseReturnTableBody');
+      tbody.innerHTML = state.returns.map((item) => `
+        <tr>
+          <td>${item.return_number}</td>
+          <td>${item.purchase_number}</td>
+          <td>${item.supplier_name || 'Supplier'}</td>
+          <td>${new Date(item.return_date).toLocaleDateString()}</td>
+          <td>${formatMoney(item.total)}</td>
+          <td><span class="pill ${String(item.status || 'Pending').toLowerCase()}">${item.status || 'Pending'}</span></td>
+          <td><button type="button" class="small secondary" data-print-return="${item.id}">Print</button></td>
+        </tr>
+      `).join('');
+
+      document.getElementById('reportReturnsValue').textContent = formatMoney(state.returns.reduce((sum, item) => sum + Number(item.total || 0), 0));
+    }
+
+    async function loadSuppliersList() {
+      const response = await fetch('/api/suppliers');
+      if (response.status === 401) {
+        window.location.href = '/admin/login.html';
+        return;
+      }
+      const data = await response.json();
+      const supplierList = document.getElementById('supplierList');
+      const suppliers = data.suppliers || [];
+      supplierList.innerHTML = suppliers.map((supplier) => `
+        <div class="supplier-item">
+          <div>
+            <div><strong>${supplier.name}</strong></div>
+            <div class="supplier-meta">${supplier.company_name || 'Company not provided'} • ${supplier.phone || 'No phone'} • ${supplier.email || 'No email'}</div>
+          </div>
+          <div class="mini-actions">
+            <button type="button" class="small secondary" data-edit-supplier="${supplier.id}">Edit</button>
+          </div>
+        </div>
+      `).join('');
+      document.getElementById('reportSupplierCount').textContent = String(suppliers.length);
+    }
+
+    async function loadReports() {
+      const grossResponse = await fetch('/api/reports/net-purchases');
+      const grossData = grossResponse.ok ? await grossResponse.json() : { gross_purchases: 0 };
+      const reportTableBody = document.getElementById('reportTableBody');
+      const totalPurchases = Number(grossData.gross_purchases || 0);
+      const totalReturns = state.returns.reduce((sum, item) => sum + Number(item.total || 0), 0);
+      const netSpend = totalPurchases - totalReturns;
+      document.getElementById('reportGrossPurchases').textContent = formatMoney(totalPurchases);
+      document.getElementById('reportReturnsValue').textContent = formatMoney(totalReturns);
+      reportTableBody.innerHTML = `
+        <tr><td>Gross purchases</td><td>${formatMoney(totalPurchases)}</td></tr>
+        <tr><td>Purchase returns</td><td>${formatMoney(totalReturns)}</td></tr>
+        <tr><td>Net spend</td><td>${formatMoney(netSpend)}</td></tr>
+      `;
+
+      const batchLedgerResponse = await fetch('/api/item-batch-ledger');
+      const batchLedgerData = batchLedgerResponse.ok ? await batchLedgerResponse.json() : { ledger: [] };
+      const batchLedgerBody = document.getElementById('batchLedgerTableBody');
+      const ledgerRows = batchLedgerData.ledger || [];
+      batchLedgerBody.innerHTML = ledgerRows.length ? ledgerRows.map((row) => `
+        <tr>
+          <td>${row.product_name || 'Product'}</td>
+          <td>${row.batch_number || '—'}</td>
+          <td>${row.expiry_date || '—'}</td>
+          <td>${Number(row.available_quantity || 0)}</td>
+          <td>${Number(row.total_in || 0)}</td>
+          <td>${Number(row.total_out || 0)}</td>
+          <td>${formatMoney(row.purchase_cost || 0)}</td>
+        </tr>
+      `).join('') : '<tr><td colspan="7" class="muted">No batch ledger records found.</td></tr>';
+    }
+
+    function selectPurchaseInvoiceForReturn() {
+      const select = document.getElementById('returnPurchaseSelect');
+      if (!select) return;
+      const value = Number(select.value || 0);
+      const purchase = state.purchases.find((item) => Number(item.id) === value);
+      const supplierInput = document.getElementById('returnSupplierInput');
+      const productSelect = document.getElementById('returnProductSelect');
+      if (!purchase) {
+        supplierInput.value = '';
+        productSelect.innerHTML = '';
+        return;
+      }
+      const supplier = state.suppliers.find((item) => Number(item.id) === Number(purchase.supplier_id));
+      supplierInput.value = supplier ? supplier.name : purchase.supplier_name || '';
+
+      const items = purchase.items || [];
+      productSelect.innerHTML = items.map((item) => `<option value="${item.product_id}">${item.product_name || item.product_id}</option>`).join('');
+      const qtyInput = document.getElementById('returnQty');
+      const rateInput = document.getElementById('returnRate');
+      const amountInput = document.getElementById('returnAmount');
+      qtyInput.value = 1;
+      rateInput.value = 0;
+      amountInput.value = 0;
+    }
+
+    function updateReturnAmount() {
+      const qty = Number(document.getElementById('returnQty').value || 0);
+      const rate = Number(document.getElementById('returnRate').value || 0);
+      document.getElementById('returnAmount').value = (qty * rate).toFixed(2);
+    }
+
+    function openPrintableWindow(title, html) {
+      const newWindow = window.open('', '_blank', 'width=980,height=820');
+      if (!newWindow) return;
+      newWindow.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><title>${title}</title><style>
+        :root {
+          --bg: #f8fafc;
+          --paper: #ffffff;
+          --ink: #0f172a;
+          --muted: #64748b;
+          --line: #e2e8f0;
+          --card: #f8fafc;
+          --primary: #0f172a;
+          --accent: #0ea5e9;
+          --success: #166534;
+          --warning: #b45309;
+          --shadow: 0 22px 48px rgba(15, 23, 42, 0.10);
+        }
+        * { box-sizing: border-box; }
+        body {
+          margin: 0;
+          padding: 0;
+          background: var(--bg);
+          color: var(--ink);
+          font-family: Arial, Helvetica, sans-serif;
+        }
+        .invoice-shell {
+          position: relative;
+          max-width: 980px;
+          margin: 30px auto;
+          background: var(--paper);
+          border: 1px solid var(--line);
+          border-radius: 20px;
+          box-shadow: var(--shadow);
+          padding: 34px 36px 26px;
+          overflow: hidden;
+        }
+        .watermark {
+          position: absolute;
+          inset: 0;
+          display: grid;
+          place-items: center;
+          pointer-events: none;
+          opacity: 0.07;
+        }
+        .watermark img {
+          max-width: 68%;
+          max-height: 68%;
+          object-fit: contain;
+          filter: grayscale(1) brightness(0.76) contrast(1.08);
+          transform: rotate(-10deg) scale(1.02);
+        }
+        .content {
+          position: relative;
+          z-index: 1;
+        }
+        .header {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+          gap: 24px;
+          border-bottom: 1px solid var(--line);
+          padding-bottom: 20px;
+          margin-bottom: 22px;
+        }
+        .brand {
+          display: flex;
+          align-items: center;
+          gap: 18px;
+          min-width: 0;
+        }
+        .brand-logo {
+          width: 76px;
+          height: 76px;
+          border-radius: 16px;
+          background: var(--card);
+          border: 1px solid var(--line);
+          display: grid;
+          place-items: center;
+          overflow: hidden;
+          flex-shrink: 0;
+        }
+        .brand-logo img {
+          width: 100%;
+          height: 100%;
+          object-fit: contain;
+        }
+        .brand-copy {
+          min-width: 0;
+        }
+        .brand-copy h2 {
+          margin: 0;
+          font-size: 1.8rem;
+          letter-spacing: -0.04em;
+        }
+        .brand-copy .subtitle {
+          margin-top: 6px;
+          color: var(--muted);
+          font-size: 0.78rem;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+        }
+        .address {
+          font-size: 0.8rem;
+          line-height: 1.6;
+          color: var(--muted);
+          margin-top: 8px;
+        }
+        .meta-panel {
+          min-width: 290px;
+          background: var(--card);
+          border: 1px solid var(--line);
+          border-radius: 16px;
+          padding: 18px 18px 12px;
+        }
+        .meta-panel .label {
+          display: block;
+          color: var(--muted);
+          font-size: 0.72rem;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          margin-bottom: 6px;
+        }
+        .meta-panel .value {
+          display: block;
+          font-size: 1.05rem;
+          font-weight: 700;
+          color: var(--ink);
+          margin-bottom: 12px;
+        }
+        .meta-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 14px 12px;
+          margin-top: 8px;
+        }
+        .meta-grid .small-label {
+          font-size: 0.7rem;
+          color: var(--muted);
+          text-transform: uppercase;
+          letter-spacing: 0.08em;
+          display: block;
+          margin-bottom: 4px;
+        }
+        .meta-grid .small-value {
+          display: block;
+          font-weight: 700;
+          font-size: 0.92rem;
+        }
+        .info-grid {
+          display: grid;
+          grid-template-columns: 1.2fr 1fr;
+          gap: 18px;
+          margin-bottom: 16px;
+        }
+        .info-block {
+          background: #fff;
+          border: 1px solid var(--line);
+          border-radius: 14px;
+          padding: 16px 18px;
+        }
+        .info-block h4 {
+          margin: 0 0 10px;
+          font-size: 0.76rem;
+          letter-spacing: 0.1em;
+          text-transform: uppercase;
+          color: var(--muted);
+        }
+        .info-block .line {
+          display: flex;
+          justify-content: space-between;
+          gap: 16px;
+          padding: 6px 0;
+          border-bottom: 1px dashed var(--line);
+          font-size: 0.9rem;
+        }
+        .info-block .line:last-child { border-bottom: none; }
+        .info-block .line span:first-child { color: var(--muted); }
+        .summary-card {
+          background: linear-gradient(135deg, #ecfeff, #f8fafc);
+          border: 1px solid #bae6fd;
+          border-radius: 14px;
+          padding: 16px 18px 12px;
+          display: flex;
+          flex-direction: column;
+          gap: 4px;
+        }
+        .summary-card h4 {
+          margin: 0 0 10px;
+          font-size: 0.76rem;
+          letter-spacing: 0.1em;
+          text-transform: uppercase;
+          color: #475569;
+        }
+        .summary-card .line {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 18px;
+          min-height: 34px;
+          padding: 12px 0 11px;
+          margin: 1px 0;
+          border-bottom: 1px dashed rgba(14, 165, 233, 0.35);
+          font-size: 0.9rem;
+          line-height: 1.9;
+        }
+        .summary-card .line:last-child {
+          border-bottom: none;
+          padding-bottom: 4px;
+        }
+        .summary-card .line > span:first-child {
+          color: var(--muted);
+          flex: 1 1 auto;
+        }
+        .summary-card .line > span:last-child,
+        .summary-card .line > strong {
+          display: inline-block;
+          white-space: nowrap;
+          text-align: right;
+          margin-left: auto;
+          font-weight: 700;
+        }
+        .summary-card .line strong {
+          color: var(--ink);
+        }
+        table {
+          width: 100%;
+          border-collapse: collapse;
+          margin-top: 10px;
+          background: #fff;
+          border: 1px solid var(--line);
+          border-radius: 14px;
+          overflow: hidden;
+        }
+        th, td {
+          padding: 12px 12px;
+          border-bottom: 1px solid var(--line);
+          font-size: 0.92rem;
+          vertical-align: middle;
+        }
+        thead th {
+          background: #f8fafc;
+          color: var(--muted);
+          font-size: 0.72rem;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          text-align: left;
+        }
+        tbody tr:nth-child(even) { background: #f8fafc; }
+        tbody tr:last-child td { border-bottom: none; }
+        .num {
+          text-align: right;
+          font-variant-numeric: tabular-nums;
+        }
+        .totals {
+          width: 320px;
+          margin: 18px 0 0 auto;
+          border: 1px solid var(--line);
+          border-radius: 14px;
+          overflow: hidden;
+        }
+        .totals-row {
+          display: flex;
+          justify-content: space-between;
+          gap: 14px;
+          padding: 12px 14px;
+          border-bottom: 1px solid var(--line);
+          background: #fff;
+          font-size: 0.94rem;
+        }
+        .totals-row:last-child { border-bottom: none; }
+        .totals-row.total {
+          background: #0f172a;
+          color: #fff;
+          font-size: 1.03rem;
+          font-weight: 700;
+        }
+        .totals-row.balance {
+          background: linear-gradient(135deg, #ecfeff, #f0fdf4);
+          color: var(--ink);
+        }
+        .footer-note {
+          margin-top: 22px;
+          padding-top: 18px;
+          border-top: 1px solid var(--line);
+          color: var(--muted);
+          font-size: 0.9rem;
+          text-align: center;
+        }
+        @media print {
+          body {
+            background: #fff;
+          }
+          .invoice-shell {
+            box-shadow: none;
+            border: none;
+            border-radius: 0;
+            margin: 0;
+            max-width: none;
+            padding: 0;
+          }
+          .no-print { display: none !important; }
+          .watermark { opacity: 0.07; }
+          .watermark img { max-width: 70%; max-height: 70%; filter: grayscale(1) brightness(0.76) contrast(1.08); transform: rotate(-10deg) scale(1.02); }
+          .content { padding: 20px; }
+        }
+      </style></head><body>${html}<script>window.print();<\/script></body></html>`);
+      newWindow.document.close();
+    }
+
+    function normalizePrintEmail(value) {
+      if (!value) return value;
+      return String(value).replace(/saltnumpharmacy/gi, 'premiumstore');
+    }
+
+    async function printPurchaseInvoice(id) {
+      const purchase = state.purchases.find((item) => Number(item.id) === Number(id));
+      if (!purchase) return;
+      const supplier = state.suppliers.find((item) => Number(item.id) === Number(purchase.supplier_id));
+      const companyResponse = await fetch('/api/public/company-settings');
+      const companyData = companyResponse.ok ? await companyResponse.json() : { company: {} };
+      const company = companyData.company || {};
+      const logoUrl = company.logo_data_url || '';
+      const supplierName = supplier ? supplier.name : purchase.supplier_name || 'Supplier';
+      const supplierOutstanding = Number(purchase.total || 0) - Number(purchase.paid_amount || 0);
+      const annualAddress = [company.address_line_1, company.address_line_2, company.area_locality, company.city, company.state_province, company.postal_code, company.country].filter(Boolean).join(', ');
+      const companyContact = [company.primary_phone, normalizePrintEmail(company.email), company.website].filter(Boolean).join(' • ');
+      const html = `
+        <div class="invoice-shell">
+          <div class="watermark">
+            ${logoUrl ? `<img src="${logoUrl}" alt="${company.company_name || 'Company'}" />` : ''}
+          </div>
+          <div class="content">
+            <header class="header">
+              <div class="brand">
+                <div class="brand-logo">
+                  ${logoUrl ? `<img src="${logoUrl}" alt="${company.company_name || 'Company'}" />` : `<div style="font-size:1.1rem;font-weight:700;">${(company.company_name || 'Company').slice(0, 2).toUpperCase()}</div>`}
+                </div>
+                <div class="brand-copy">
+                  <h2>${company.company_name || 'Business Name'}</h2>
+                  <div class="subtitle">Purchase Invoice</div>
+                  <div class="address">${annualAddress || 'Business Address'}</div>
+                  <div class="address">${companyContact || 'Contact details'}</div>
+                </div>
+              </div>
+
+              <div class="meta-panel">
+                <span class="label">Invoice</span>
+                <span class="value">${purchase.purchase_number || 'PUR-0000'}</span>
+                <div class="meta-grid">
+                  <div>
+                    <span class="small-label">Date</span>
+                    <span class="small-value">${new Date(purchase.purchase_date).toLocaleDateString()}</span>
+                  </div>
+                  <div>
+                    <span class="small-label">Supplier</span>
+                    <span class="small-value">${supplierName}</span>
+                  </div>
+                </div>
+              </div>
+            </header>
+
+            <section class="info-grid">
+              <div class="info-block">
+                <h4>Supplier Details</h4>
+                <div class="line"><span>Name</span><strong>${supplierName}</strong></div>
+                <div class="line"><span>Company</span><span>${supplier ? supplier.company_name || 'N/A' : 'N/A'}</span></div>
+                <div class="line"><span>Phone</span><span>${supplier ? supplier.phone || 'N/A' : 'N/A'}</span></div>
+                <div class="line"><span>Email</span><span>${normalizePrintEmail(supplier ? supplier.email || 'N/A' : 'N/A')}</span></div>
+              </div>
+
+              <div class="summary-card">
+                <h4>Supplier balance</h4>
+                <div class="line"><span>Invoice total</span><strong>${formatMoney(purchase.total)}</strong></div>
+                <div class="line"><span>Paid</span><span>${formatMoney(purchase.paid_amount || 0)}</span></div>
+                <div class="line"><span>Outstanding</span><strong>${formatMoney(supplierOutstanding)}</strong></div>
+              </div>
+            </section>
+
+            <table aria-label="Purchase invoice items">
+              <thead>
+                <tr>
+                  <th>Item</th>
+                  <th>Batch</th>
+                  <th class="num">Qty</th>
+                  <th class="num">Rate</th>
+                  <th class="num">Discount</th>
+                  <th class="num">Tax</th>
+                  <th class="num">Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${(purchase.items || []).map((item) => `
+                  <tr>
+                    <td>${item.product_name || item.product_id || 'Product'}</td>
+                    <td>${item.batch_number || item.batch || '—'}</td>
+                    <td class="num">${Number(item.quantity || 0)}</td>
+                    <td class="num">${formatMoney(item.unit_cost || item.purchase_rate || 0)}</td>
+                    <td class="num">${formatMoney(item.discount || 0)}</td>
+                    <td class="num">${formatMoney(item.tax || 0)}</td>
+                    <td class="num">${formatMoney(item.line_total || (Number(item.quantity || 0) * Number(item.unit_cost || item.purchase_rate || 0)))}</td>
+                  </tr>
+                `).join('') || '<tr><td colspan="7" style="text-align:center;color:#64748b;padding:18px;">No items were added for this purchase.</td></tr>'}
+              </tbody>
+            </table>
+
+            <div class="totals">
+              <div class="totals-row"><span>Subtotal</span><span>${formatMoney(purchase.subtotal || 0)}</span></div>
+              <div class="totals-row"><span>Discount</span><span>-${formatMoney(purchase.discount || 0)}</span></div>
+              <div class="totals-row"><span>Tax</span><span>${formatMoney(purchase.tax || 0)}</span></div>
+              <div class="totals-row balance"><span>Vendor Balance</span><strong>${formatMoney(supplierOutstanding)}</strong></div>
+              <div class="totals-row total"><span>Invoice Total</span><span>${formatMoney(purchase.total || 0)}</span></div>
+            </div>
+
+            <div class="footer-note">Thank you for your business! We appreciate our continued partnership.</div>
+          </div>
+        </div>
+      `;
+      openPrintableWindow('Purchase Invoice', html);
+    }
+
+    function printPurchaseReturn(id) {
+      const record = state.returns.find((item) => Number(item.id) === Number(id));
+      if (!record) return;
+      openPrintableWindow('Purchase Return', `
+        <h2>Purchase Return</h2>
+        <div class="meta">Return No: ${record.return_number}</div>
+        <div class="meta">Invoice No: ${record.purchase_number}</div>
+        <div class="meta">Supplier: ${record.supplier_name || 'Supplier'}</div>
+        <div class="meta">Date: ${new Date(record.return_date).toLocaleDateString()}</div>
+        <div class="meta">Reason: ${record.reason || 'Not specified'}</div>
+        <div class="totals" style="margin-top:16px;text-align:right;">Total: ${formatMoney(record.total)}</div>
+      `);
+    }
+
+    async function saveBatch(event) {
+      if (event) event.preventDefault();
+
+      const batchNumberField = document.getElementById('batchNumberInput');
+      const expiryField = document.getElementById('batchExpiryInput');
+      const batchNumber = batchNumberField.value.trim();
+      let expiryDate = expiryField.value.trim();
+
+      setBatchFieldState('batchNumberInput', true);
+      setBatchFieldState('batchExpiryInput', true);
+      clearBatchFormMessage();
+
+      if (!batchNumber) {
+        setBatchFieldState('batchNumberInput', false);
+        showBatchFormMessage('Batch number is required.', 'error');
+        batchNumberField.focus();
+        return;
+      }
+
+      try {
+        expiryDate = normalizeBatchExpiryDate(expiryDate);
+      } catch (error) {
+        setBatchFieldState('batchExpiryInput', false);
+        showBatchFormMessage(error.message || 'Expiry date must be in DD-MM-YY format.', 'error');
+        expiryField.focus();
+        return;
+      }
+
+      if (!expiryDate) {
+        setBatchFieldState('batchExpiryInput', false);
+        showBatchFormMessage('Expiry date is required.', 'error');
+        expiryField.focus();
+        return;
+      }
+
+      const payload = {
+        batch_number: batchNumber,
+        expiry_date: expiryDate,
+        supplier_name: 'Supplier'
+      };
+
+      try {
+        const { data: result } = await fetchJson('/api/product-batches', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        document.getElementById('batchForm').reset();
+        setBatchFieldState('batchNumberInput', true);
+        setBatchFieldState('batchExpiryInput', true);
+        showBatchFormMessage(result.message || 'Batch created successfully!', 'success');
+        setTimeout(() => clearBatchFormMessage(), 1800);
+        setBatchFormVisible(false);
+        await loadReports();
+        await loadBatches();
+        if (document.getElementById('purchaseProductSelect')) {
+          const purchaseProductSelect = document.getElementById('purchaseProductSelect');
+          if (purchaseProductSelect.value) {
+            populatePurchaseBatchSelect(Number(purchaseProductSelect.value));
+          }
+        }
+        showToast(result.message || 'Batch created successfully!', 'success');
+      } catch (error) {
+        console.error('Batch save failed:', error.response?.data ?? error);
+        const payload = error.response?.data;
+        const message = typeof payload === 'string'
+          ? payload.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim() || error.message
+          : payload?.message || payload?.error || payload?.errorMessage || error.message || 'Unable to save batch.';
+        setBatchFieldState('batchNumberInput', false);
+        setBatchFieldState('batchExpiryInput', false);
+        showBatchFormMessage(message, 'error');
+        showToast(message, 'error');
+      }
+    }
+
+    async function savePurchase(event) {
+      event.preventDefault();
+      if (!state.purchaseLines.length) {
+        showToast('Please add at least one purchase line before saving the invoice.', 'warning');
+        return;
+      }
+      const supplierId = Number(document.getElementById('purchaseSupplierSelect').value);
+      const invoiceNumber = document.getElementById('purchaseInvoiceNumber').value.trim();
+      const purchaseDate = document.getElementById('purchaseDate').value;
+      if (!supplierId || !purchaseDate) {
+        showToast('Supplier and purchase date are required.', 'warning');
+        return;
+      }
+
+      const payload = {
+        supplier_id: supplierId,
+        supplier_invoice_number: invoiceNumber || undefined,
+        purchase_date: purchaseDate,
+        notes: document.getElementById('purchaseNotes').value,
+        items: state.purchaseLines.map((line) => ({
+          product_id: Number(line.productId),
+          batch_id: Number(line.batchId || 0),
+          batch_number: line.batchNumber || '',
+          expiry_date: line.expiryDate || '',
+          quantity: Number(line.quantity),
+          purchase_rate: Number(line.unitCost),
+          tax: Number(line.tax),
+          discount: Number(line.discount)
+        }))
+      };
+
+      const response = await fetch('/api/purchases', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const result = await response.json();
+      if (!response.ok) {
+        showToast(result.error || 'Unable to save purchase invoice.', 'error');
+        return;
+      }
+
+      document.getElementById('purchaseForm').reset();
+      clearPurchaseLines();
+      setPurchaseFormVisible(false);
+      await loadPurchases();
+      await loadReports();
+      showToast('Purchase invoice saved successfully.', 'success');
+    }
+
+    async function savePurchaseReturn(event) {
+      event.preventDefault();
+      const purchaseId = Number(document.getElementById('returnPurchaseSelect').value);
+      if (!purchaseId) {
+        showToast('Purchase invoice number is mandatory for purchase returns.', 'warning');
+        return;
+      }
+
+      const payload = {
+        purchase_id: purchaseId,
+        purchase_invoice_number: document.getElementById('returnPurchaseSelect').selectedOptions[0]?.text || '',
+        return_date: document.getElementById('returnDate').value,
+        reason: document.getElementById('returnReason').value,
+        product_id: Number(document.getElementById('returnProductSelect').value),
+        quantity: Number(document.getElementById('returnQty').value || 0),
+        unit_cost: Number(document.getElementById('returnRate').value || 0)
+      };
+
+      if (!payload.return_date || !payload.reason || !payload.product_id || payload.quantity <= 0) {
+        showToast('Please fill all return fields correctly.', 'warning');
+        return;
+      }
+
+      const response = await fetch('/api/purchase-returns', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const result = await response.json();
+      if (!response.ok) {
+        showToast(result.error || 'Unable to save purchase return.', 'error');
+        return;
+      }
+
+      document.getElementById('purchaseReturnForm').reset();
+      await loadPurchaseReturns();
+      await loadReports();
+      showToast('Purchase return saved successfully.', 'success');
+    }
+
+    async function saveSupplier(event) {
+      event.preventDefault();
+      const form = event.target;
+      const formData = new FormData(form);
+      const payload = Object.fromEntries(formData.entries());
+      const response = await fetch('/api/suppliers', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const result = await response.json();
+      if (!response.ok) {
+        showToast(result.error || 'Unable to save supplier.', 'error');
+        return;
+      }
+      form.reset();
+      setSupplierFormVisible(false);
+      await loadSuppliersList();
+      await loadCatalogData();
+      await loadPurchases();
+      showToast('Supplier saved successfully.', 'success');
+    }
+
+    document.querySelectorAll('.module-tab').forEach((tab) => {
+      tab.addEventListener('click', () => showModule(tab.dataset.module));
+    });
+
+    document.getElementById('togglePurchaseForm').addEventListener('click', () => {
+      const visible = document.getElementById('purchaseForm').classList.contains('hidden');
+      setPurchaseFormVisible(visible);
+    });
+
+    document.getElementById('toggleBatchForm').addEventListener('click', () => {
+      const visible = document.getElementById('batchForm').classList.contains('hidden');
+      setBatchFormVisible(visible);
+    });
+
+    document.getElementById('cancelPurchaseForm').addEventListener('click', () => {
+      document.getElementById('purchaseForm').reset();
+      clearPurchaseLines();
+      setPurchaseFormVisible(false);
+    });
+
+    document.getElementById('cancelBatchForm').addEventListener('click', () => {
+      document.getElementById('batchForm').reset();
+      setBatchFormVisible(false);
+    });
+
+    document.getElementById('addPurchaseLineBtn').addEventListener('click', addPurchaseLine);
+    document.getElementById('purchaseLineBody').addEventListener('click', (event) => {
+      const removeBtn = event.target.closest('[data-remove-line="true"]');
+      if (!removeBtn) return;
+      const lineIndex = Number(removeBtn.dataset.lineIndex);
+      state.purchaseLines.splice(lineIndex, 1);
+      renderPurchaseLines();
+    });
+
+    document.getElementById('purchaseProductSelect').addEventListener('change', (event) => {
+      populatePurchaseBatchSelect(Number(event.target.value || 0));
+    });
+
+    document.getElementById('purchaseBatchSelect').addEventListener('change', (event) => {
+      const selected = event.target.selectedOptions[0];
+      if (!selected) {
+        document.getElementById('purchaseExpiryDate').value = '';
+        return;
+      }
+      const expiry = decodeURIComponent(String(selected.dataset.expiry || '')).trim();
+      document.getElementById('purchaseExpiryDate').value = expiry || '';
+    });
+
+    bindBatchExpiryMask('batchExpiryInput');
+    bindBatchExpiryMask('purchaseExpiryDate');
+
+    document.getElementById('saveBatchBtn').addEventListener('click', saveBatch);
+    document.getElementById('purchaseForm').addEventListener('submit', savePurchase);
+    document.getElementById('purchaseReturnForm').addEventListener('submit', savePurchaseReturn);
+    document.getElementById('supplierForm').addEventListener('submit', saveSupplier);
+    document.getElementById('toggleSupplierForm').addEventListener('click', () => {
+      const visible = document.getElementById('supplierForm').classList.contains('hidden');
+      setSupplierFormVisible(visible);
+    });
+    document.getElementById('cancelSupplierForm').addEventListener('click', () => {
+      document.getElementById('supplierForm').reset();
+      setSupplierFormVisible(false);
+    });
+
+    document.getElementById('returnPurchaseSelect').addEventListener('change', () => {
+      selectPurchaseInvoiceForReturn();
+    });
+    document.getElementById('returnQty').addEventListener('input', updateReturnAmount);
+    document.getElementById('returnRate').addEventListener('input', updateReturnAmount);
+
+    document.getElementById('purchaseTableBody').addEventListener('click', async (event) => {
+      const button = event.target.closest('[data-print-purchase]');
+      if (!button) return;
+      printPurchaseInvoice(button.dataset.printPurchase);
+    });
+
+    document.getElementById('purchaseReturnTableBody').addEventListener('click', async (event) => {
+      const button = event.target.closest('[data-print-return]');
+      if (!button) return;
+      printPurchaseReturn(button.dataset.printReturn);
+    });
+
+    document.getElementById('logoutBtn').addEventListener('click', async () => {
+      await fetch('/api/admin/logout', { method: 'POST' });
+      window.location.href = '/admin/login.html';
+    });
+
+    async function initialize() {
+      bindPurchaseFilterInputs();
+      const ok = await ensureAdminSession();
+      if (!ok) return;
+      await loadPurchases();
+      await loadCatalogData();
+      await loadPurchaseReturns();
+      await loadSuppliersList();
+      await loadReports();
+      await loadBatches();
+      applySmartSearchToPurchaseSelects();
+      renderPurchaseLines();
+      setPurchaseFormVisible(false);
+      setSupplierFormVisible(false);
+      showModule('invoices');
+    }
+
+    initialize();
+  </script>
+</body>
+</html>

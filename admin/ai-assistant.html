@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>AI Assistant</title>
+  <link rel="stylesheet" href="/admin/sidebar.css">
+  <style>
+    body { margin: 0; font-family: Arial, sans-serif; background: #f5f7fa; color: #172033; }
+    .layout { display: grid; grid-template-columns: 240px 1fr; min-height: 100vh; }
+    .content { padding: 28px; }
+    .panel { max-width: 900px; background: #fff; border: 1px solid #dbe2ea; border-radius: 8px; padding: 20px; margin-bottom: 18px; }
+    input, textarea, button { width: 100%; padding: 10px; margin: 6px 0; border: 1px solid #cbd5e1; border-radius: 5px; }
+    textarea { min-height: 110px; }
+    button { background: #0f766e; color: #fff; border: 0; font-weight: bold; cursor: pointer; }
+    button:disabled { opacity: .6; cursor: wait; }
+    .message { min-height: 20px; color: #0f766e; }
+    .message.error { color: #b91c1c; }
+    @media (max-width: 760px) { .layout { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <aside id="adminSidebar" class="sidebar"></aside>
+    <main class="content">
+      <h1>AI Assistant</h1>
+      <p class="message" id="message" role="status"></p>
+      <section class="panel">
+        <label><input id="enabled" type="checkbox"> Enable customer chatbot</label>
+        <label for="provider">AI provider</label>
+        <select id="provider">
+          <option value="anthropic">Anthropic</option>
+          <option value="openai">OpenAI</option>
+        </select>
+        <label for="apiKey">Installation API key</label>
+        <input id="apiKey" type="password" autocomplete="new-password" placeholder="Paste a new API key to save or replace it">
+        <p id="keyStatus"></p>
+        <textarea id="tones" placeholder="One greeting or sign-off per line"></textarea>
+        <button id="save" type="button">Save assistant settings</button>
+        <button id="testConnection" type="button">Test Connection</button>
+      </section>
+      <section class="panel">
+        <h2>Knowledge Base</h2>
+        <p>One current knowledge document is used by the assistant. Saving replaces the previous document.</p>
+        <input id="title" placeholder="Document title" required>
+        <textarea id="content" placeholder="Policies, FAQs, organization information, or sale announcements" required></textarea>
+        <button id="add" type="button">Save knowledge document</button>
+        <div id="knowledge"></div>
+      </section>
+    </main>
+  </div>
+  <script src="/admin/sidebar.js"></script>
+  <script>
+    const byId = (id) => document.getElementById(id);
+    function showMessage(message, isError = false) {
+      const box = byId('message');
+      box.textContent = message;
+      box.className = isError ? 'message error' : 'message';
+    }
+    async function request(url, options) {
+      const response = await fetch(url, options);
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data.error || 'The request could not be completed.');
+      return data;
+    }
+    async function load() {
+      try {
+        const data = await request('/api/admin/ai-assistant');
+        byId('enabled').checked = !!data.settings.enabled;
+        byId('provider').value = data.provider?.provider || 'anthropic';
+        byId('apiKey').value = '';
+        byId('keyStatus').textContent = data.provider?.api_key_configured ? `Saved key: ${data.provider.api_key_masked}` : 'No API key saved. The chatbot will use deterministic mode.';
+        byId('tones').value = (data.settings.marketing_tones || []).join('\n');
+        const item = data.knowledge[0];
+        byId('title').value = item?.title || '';
+        byId('content').value = item?.content || '';
+        byId('knowledge').textContent = item ? `Last updated: ${item.updated_at}` : 'No knowledge document has been saved yet.';
+      } catch (error) {
+        showMessage(error.message, true);
+      }
+    }
+    async function save(button, action, successMessage) {
+      button.disabled = true;
+      showMessage('Saving...');
+      try {
+        await action();
+        showMessage(successMessage);
+        await load();
+      } catch (error) {
+        showMessage(error.message, true);
+      } finally {
+        button.disabled = false;
+      }
+    }
+    byId('save').onclick = () => save(byId('save'), () => request('/api/admin/ai-assistant', {
+      method: 'PUT', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ enabled: byId('enabled').checked, provider: byId('provider').value, api_key: byId('apiKey').value, marketing_tones: byId('tones').value.split('\n') })
+    }), 'Assistant settings saved.');
+    byId('testConnection').onclick = () => save(byId('testConnection'), () => request('/api/admin/ai-assistant/test-connection', { method: 'POST' }), 'AI provider connection verified.');
+    byId('add').onclick = () => {
+      const title = byId('title').value.trim();
+      const content = byId('content').value.trim();
+      if (!title || !content) return showMessage('Enter both a title and knowledge content.', true);
+      return save(byId('add'), () => request('/api/admin/ai-assistant/knowledge', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ title, content })
+      }), 'Knowledge document saved.');
+    };
+    load();
+  </script>
+</body>
+</html>

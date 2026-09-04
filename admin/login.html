@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Business Admin Login</title>
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --panel: #ffffff;
+      --primary: #0284c7;
+      --primary-dark: #0369a1;
+      --text: #0f172a;
+      --muted: #64748b;
+      --border: #e2e8f0;
+      --danger: #ef4444;
+    }
+    * { box-sizing: border-box; }
+    body {
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #e0f2fe, #f8fafc);
+      color: var(--text);
+    }
+    .login-card {
+      width: min(420px, calc(100% - 24px));
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      box-shadow: 0 12px 28px rgba(15, 23, 42, 0.12);
+      padding: 30px 24px;
+    }
+    h1 {
+      margin: 0 0 8px;
+      font-size: 2rem;
+      text-align: center;
+    }
+    .subtitle {
+      margin: 0 0 24px;
+      text-align: center;
+      color: var(--muted);
+    }
+    form { display: grid; gap: 16px; }
+    .field {
+      display: grid;
+      gap: 8px;
+      font-weight: 600;
+      color: var(--text);
+    }
+    .field-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      line-height: 1.3;
+    }
+    .required-mark {
+      color: var(--danger);
+      font-weight: 700;
+      line-height: 1;
+    }
+    input {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      font-size: 1rem;
+    }
+    button {
+      border: none;
+      border-radius: 10px;
+      padding: 12px 14px;
+      background: var(--primary);
+      color: white;
+      font-weight: 700;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+    button:hover { background: var(--primary-dark); }
+    .alert {
+      min-height: 18px;
+      font-size: 0.9rem;
+      color: var(--danger);
+      margin: 0;
+    }
+    .secondary {
+      text-align: center;
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="login-card">
+    <h1>Executive Access</h1>
+    <p class="subtitle" id="companySubtitle">Business Name Business Console</p>
+    <form id="loginForm">
+      <label class="field">
+        <span class="field-label">Email <span class="required-mark">*</span></span>
+        <input id="email" name="email" type="email" autocomplete="username" required />
+      </label>
+      <label class="field">
+        <span class="field-label">Password <span class="required-mark">*</span></span>
+        <input id="password" name="password" type="password" autocomplete="current-password" required />
+      </label>
+      <button type="submit">Login</button>
+      <p class="alert" id="loginError"></p>
+    </form>
+    <div class="secondary">Use your secure business credentials to continue.</div>
+  </div>
+
+  <script>
+    const form = document.getElementById('loginForm');
+    const errorBox = document.getElementById('loginError');
+    const companySubtitle = document.getElementById('companySubtitle');
+    const loginButton = form.querySelector('button[type="submit"]');
+
+    async function redirectIfAuthenticated() {
+      try {
+        const response = await fetch('/api/admin/me', { cache: 'no-store' });
+        if (!response.ok) return;
+
+        const data = await response.json();
+        if (data?.authenticated) {
+          window.location.replace('/admin');
+        }
+      } catch (error) {
+        // Keep the form available when the session check fails.
+      }
+    }
+
+    async function submitLogin() {
+      errorBox.textContent = '';
+
+      const payload = {
+        email: document.getElementById('email').value,
+        password: document.getElementById('password').value,
+      };
+
+      loginButton.disabled = true;
+
+      try {
+        const response = await fetch('/api/admin/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        const result = await response.json();
+        if (!response.ok) {
+          errorBox.textContent = result.error || 'Invalid login.';
+          return;
+        }
+
+        window.location.replace('/admin');
+      } catch (error) {
+        errorBox.textContent = 'Login failed. Please try again.';
+      } finally {
+        loginButton.disabled = false;
+      }
+    }
+
+    async function loadBusinessName() {
+      const fallbackCompanyName = 'Business';
+      try {
+        const response = await fetch('/api/public/company-settings', { cache: 'no-store' });
+        if (!response.ok) throw new Error('Public company settings unavailable.');
+        const data = await response.json();
+        const companyName = String(data?.company?.company_name || fallbackCompanyName).trim() || fallbackCompanyName;
+        document.title = `${companyName} Admin Login`;
+        companySubtitle.textContent = `${companyName} Business Console`;
+      } catch (error) {
+        document.title = `${fallbackCompanyName} Admin Login`;
+        companySubtitle.textContent = `${fallbackCompanyName} Business Console`;
+      }
+    }
+
+    loadBusinessName();
+    redirectIfAuthenticated();
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      submitLogin();
+    });
+
+    loginButton.addEventListener('click', (event) => {
+      event.preventDefault();
+      submitLogin();
+    });
+  </script>
+</body>
+</html>

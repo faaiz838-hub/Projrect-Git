@@ -1,0 +1,1044 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Track Your Order | Business Name</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f4f8ff;
+      --bg-deep: #eaf2ff;
+      --surface: rgba(255, 255, 255, 0.72);
+      --surface-strong: rgba(255, 255, 255, 0.9);
+      --line: rgba(148, 163, 184, 0.22);
+      --muted: #5f6f86;
+      --text: #0f172a;
+      --primary: #0b5fff;
+      --primary-2: #0ea5e9;
+      --success: #0f9f6e;
+      --success-soft: rgba(15, 159, 110, 0.12);
+      --warning: #d97706;
+      --danger: #dc2626;
+      --shadow: 0 28px 60px rgba(15, 23, 42, 0.10);
+      --soft-shadow: 0 18px 46px rgba(16, 24, 40, 0.07);
+      --glow: rgba(11, 95, 255, 0.18);
+      --timeline: rgba(148, 163, 184, 0.45);
+      --panel: rgba(255,255,255,0.58);
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(14, 165, 233, 0.14), transparent 28%),
+        radial-gradient(circle at top right, rgba(11, 95, 255, 0.10), transparent 26%),
+        radial-gradient(circle at bottom center, rgba(14, 165, 233, 0.08), transparent 24%),
+        linear-gradient(135deg, #f5f9ff 0%, #edf5ff 48%, #f1f5ff 100%);
+    }
+
+    a { color: inherit; }
+
+    .page-shell {
+      position: relative;
+      width: min(1120px, calc(100% - 32px));
+      margin: 42px auto 64px;
+      padding-bottom: 30px;
+    }
+
+    .page-shell::before {
+      content: "";
+      position: absolute;
+      inset: 10% 6% auto auto;
+      width: 320px;
+      height: 320px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(11,95,255,0.20), rgba(11,95,255,0));
+      pointer-events: none;
+      filter: blur(26px);
+      opacity: 0.7;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 28px;
+      padding: 12px 14px 10px;
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 1.05rem;
+      letter-spacing: -0.03em;
+      padding: 8px 12px 8px 8px;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.26);
+      border: 1px solid rgba(148,163,184,0.12);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.7);
+    }
+
+    .brand-mark {
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, rgba(11,95,255,0.12), rgba(14,165,233,0.18));
+      border: 1px solid rgba(11,95,255,0.18);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.85), 0 8px 18px rgba(11,95,255,0.12);
+      color: var(--primary);
+    }
+
+    .action-chip {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(15, 23, 42, 0.08);
+      background: rgba(255,255,255,0.72);
+      color: var(--text);
+      padding: 10px 16px;
+      text-decoration: none;
+      font-weight: 600;
+      box-shadow: var(--soft-shadow);
+      backdrop-filter: blur(10px);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .action-chip:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 16px 28px rgba(15,23,42,0.08);
+    }
+
+    .track-card {
+      position: relative;
+      background: linear-gradient(180deg, rgba(255,255,255,0.82), rgba(245,249,255,0.72));
+      border: 1px solid var(--line);
+      border-radius: 30px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      overflow: hidden;
+      transform: perspective(1200px) rotateX(1deg);
+      animation: cardFloat 12s ease-in-out infinite alternate;
+    }
+
+    @keyframes cardFloat {
+      0% { transform: perspective(1200px) rotateX(1deg) translateY(0); }
+      100% { transform: perspective(1200px) rotateX(1.4deg) translateY(-2px); }
+    }
+
+    .track-card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,0.34), rgba(255,255,255,0));
+      pointer-events: none;
+    }
+
+    .track-card-inner {
+      position: relative;
+      padding: clamp(20px, 3vw, 38px);
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(11,95,255,0.14);
+      background: rgba(11,95,255,0.05);
+      font-size: 0.74rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--primary);
+      margin-bottom: 14px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(2.25rem, 3.8vw, 3.7rem);
+      line-height: 0.98;
+      letter-spacing: -0.065em;
+    }
+
+    .subtitle {
+      margin: 14px 0 0;
+      max-width: 610px;
+      color: var(--muted);
+      font-size: 1rem;
+      line-height: 1.65;
+    }
+
+    .lookup-panel {
+      display: grid;
+      grid-template-columns: 1fr 1fr auto;
+      gap: 14px;
+      margin-top: 24px;
+      padding: 18px 18px 16px;
+      border-radius: 24px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.54), rgba(246,249,255,0.72));
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.75), 0 18px 30px rgba(15,23,42,0.04);
+    }
+
+    .field {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .field label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 700;
+      font-size: 0.79rem;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 2px;
+    }
+
+    .field .icon-wrap {
+      width: 32px;
+      height: 32px;
+      border-radius: 10px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(11,95,255,0.06);
+      color: var(--primary);
+      border: 1px solid rgba(11,95,255,0.1);
+    }
+
+    .field input {
+      width: 100%;
+      height: 54px;
+      border-radius: 15px;
+      border: 1px solid rgba(148,163,184,0.32);
+      background: rgba(255,255,255,0.88);
+      padding: 0 16px;
+      font: inherit;
+      font-size: 0.96rem;
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease, background 0.2s ease;
+      box-shadow: inset 0 1px 1px rgba(255,255,255,0.35);
+    }
+
+    .field input::placeholder { color: rgba(71,85,105,0.8); }
+    .field input:focus {
+      border-color: rgba(11,95,255,0.4);
+      box-shadow: 0 0 0 4px rgba(11,95,255,0.08);
+    }
+
+    .primary-btn {
+      appearance: none;
+      border: none;
+      border-radius: 16px;
+      align-self: end;
+      height: 54px;
+      padding: 0 24px;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-2) 100%);
+      box-shadow: 0 16px 28px rgba(11,95,255,0.22), inset 0 1px 0 rgba(255,255,255,0.28);
+      color: #fff;
+      font: inherit;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .primary-btn::after {
+      content: "";
+      position: absolute;
+      inset: -40% -14%;
+      background: linear-gradient(120deg, rgba(255,255,255,0.22), rgba(255,255,255,0));
+      transform: rotate(14deg);
+      pointer-events: none;
+    }
+
+    .primary-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 18px 32px rgba(11,95,255,0.24);
+      filter: brightness(1.02);
+    }
+
+    .primary-btn:active { transform: translateY(0); }
+
+    .primary-btn[disabled] {
+      opacity: 0.8;
+      cursor: wait;
+    }
+
+    .result-shell {
+      margin-top: 28px;
+      display: none;
+      animation: fadeInUp 0.28s ease;
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .result-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 18px;
+      padding: 16px 0 20px;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.18);
+      margin-bottom: 20px;
+    }
+
+    .result-kicker {
+      font-size: 0.76rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 10px;
+      font-weight: 700;
+    }
+
+    .result-title {
+      margin: 0;
+      font-size: clamp(1.5rem, 1.9vw, 2.1rem);
+      letter-spacing: -0.045em;
+    }
+
+    .success-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: var(--success-soft);
+      border: 1px solid rgba(15, 159, 110, 0.2);
+      color: var(--success);
+      font-weight: 700;
+    }
+
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+      margin: 18px 0 26px;
+    }
+
+    .stat-card {
+      padding: 16px 16px 14px;
+      border-radius: 18px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.72), rgba(245,249,255,0.62));
+      border: 1px solid rgba(148, 163, 184, 0.18);
+      box-shadow: var(--soft-shadow);
+      min-height: 116px;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .stat-card:hover,
+    .panel:hover,
+    .product-item:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 18px 30px rgba(15,23,42,0.06);
+    }
+
+    .stat-label {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.09em;
+      color: var(--muted);
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+
+    .pill {
+      display: inline-flex;
+      padding: 7px 11px;
+      border-radius: 999px;
+      font-size: 0.74rem;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      background: rgba(11,95,255,0.08);
+      color: var(--primary);
+    }
+
+    .pill.pending { background: rgba(148,163,184,0.12); color: #475569; }
+    .pill.processing { background: rgba(14,165,233,0.1); color: #0f766e; }
+    .pill.shipped { background: rgba(59,130,246,0.1); color: #1d4ed8; }
+    .pill.delivered { background: rgba(15,159,110,0.12); color: var(--success); }
+    .pill.cancelled { background: rgba(220,38,38,0.08); color: #b91c1c; }
+
+    .stat-value {
+      font-size: clamp(1.05rem, 1.6vw, 1.65rem);
+      font-weight: 800;
+      letter-spacing: -0.05em;
+      margin-top: 14px;
+    }
+
+    .content-grid {
+      display: grid;
+      grid-template-columns: 1.45fr 0.95fr;
+      gap: 22px;
+      align-items: start;
+    }
+
+    .panel {
+      background: linear-gradient(180deg, rgba(255,255,255,0.64), rgba(245,249,255,0.54));
+      border: 1px solid rgba(148,163,184,0.18);
+      border-radius: 22px;
+      padding: 20px;
+      box-shadow: var(--soft-shadow);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .panel-title {
+      margin: 0 0 18px;
+      font-size: 1.15rem;
+      letter-spacing: -0.03em;
+    }
+
+    .timeline {
+      position: relative;
+      padding: 10px 0 0 0;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .timeline::before {
+      content: "";
+      position: absolute;
+      left: 16px;
+      top: 18px;
+      bottom: 18px;
+      width: 2px;
+      background: linear-gradient(180deg, rgba(11,95,255,0.2), rgba(148,163,184,0.25), rgba(148,163,184,0.16));
+    }
+
+    .timeline-item {
+      position: relative;
+      display: grid;
+      grid-template-columns: 36px 1fr;
+      gap: 14px;
+      align-items: start;
+    }
+
+    .timeline-dot {
+      position: relative;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: white;
+      border: 2px solid var(--timeline);
+      box-shadow: 0 8px 16px rgba(148,163,184,0.14);
+      z-index: 1;
+      font-size: 0.8rem;
+      font-weight: 800;
+      color: var(--muted);
+    }
+
+    .timeline-item.complete .timeline-dot {
+      background: linear-gradient(135deg, #e8fff4, #d9f8eb);
+      border-color: rgba(15,159,110,0.45);
+      color: var(--success);
+    }
+
+    .timeline-item.current .timeline-dot {
+      background: linear-gradient(135deg, rgba(11,95,255,0.08), rgba(14,165,233,0.14));
+      border-color: rgba(11,95,255,0.35);
+      box-shadow: 0 0 0 6px rgba(11,95,255,0.08);
+      color: var(--primary);
+    }
+
+    .timeline-item.upcoming .timeline-dot {
+      background: #f8fafc;
+      border-color: rgba(148,163,184,0.38);
+      color: rgba(71,85,105,0.7);
+    }
+
+    .timeline-copy strong {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 0.95rem;
+    }
+
+    .timeline-copy span {
+      color: var(--muted);
+      font-size: 0.82rem;
+    }
+
+    .status-summary {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      margin-top: 2px;
+    }
+
+    .status-summary .meta {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 0.88rem;
+    }
+
+    .status-live {
+      padding: 16px 18px;
+      border-radius: 18px;
+      background: linear-gradient(135deg, rgba(11,95,255,0.07), rgba(14,165,233,0.08));
+      border: 1px solid rgba(11,95,255,0.12);
+    }
+
+    .status-label {
+      font-size: 0.72rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--primary);
+      font-weight: 700;
+    }
+
+    .current-status {
+      margin-top: 8px;
+      font-size: clamp(1.8rem, 3vw, 2.7rem);
+      letter-spacing: -0.06em;
+      font-weight: 900;
+    }
+
+    .status-copy {
+      margin-top: 10px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .delivery-box {
+      display: grid;
+      gap: 10px;
+    }
+
+    .meta-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(148,163,184,0.12);
+      font-size: 0.92rem;
+    }
+
+    .meta-row:last-child { border-bottom: none; }
+
+    .meta-row span:first-child {
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    .meta-row strong { font-size: 0.92rem; }
+
+    .orders-panel {
+      margin-top: 22px;
+    }
+
+    .product-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-top: 14px;
+    }
+
+    .product-item {
+      display: grid;
+      grid-template-columns: 68px 1fr auto;
+      gap: 14px;
+      align-items: center;
+      padding: 12px 12px;
+      border-radius: 16px;
+      border: 1px solid rgba(148,163,184,0.14);
+      background: rgba(255,255,255,0.52);
+      transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+    }
+
+    .product-thumb {
+      width: 68px;
+      height: 68px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, rgba(11,95,255,0.08), rgba(14,165,233,0.12));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+      color: var(--primary);
+      font-weight: 800;
+      border: 1px solid rgba(11,95,255,0.12);
+    }
+
+    .product-name {
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      margin-bottom: 4px;
+      font-size: 1rem;
+    }
+
+    .product-meta {
+      color: var(--muted);
+      font-size: 0.82rem;
+      line-height: 1.5;
+    }
+
+    .product-price {
+      text-align: right;
+      font-weight: 800;
+      letter-spacing: -0.04em;
+    }
+
+    .totals {
+      margin-top: 18px;
+      border-top: 1px solid rgba(148,163,184,0.18);
+      padding-top: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .totals-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      font-size: 0.94rem;
+      color: var(--muted);
+    }
+
+    .totals-row.total {
+      padding-top: 10px;
+      border-top: 1px solid rgba(148,163,184,0.18);
+      color: var(--text);
+      font-weight: 800;
+      font-size: 1.1rem;
+    }
+
+    .actions-row {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 28px;
+    }
+
+    .secondary-btn {
+      appearance: none;
+      border: 1px solid rgba(148,163,184,0.28);
+      background: rgba(255,255,255,0.68);
+      color: var(--text);
+      border-radius: 14px;
+      padding: 12px 16px;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .error-box {
+      padding: 18px;
+      background: rgba(220,38,38,0.05);
+      border: 1px solid rgba(220,38,38,0.14);
+      border-radius: 18px;
+      color: var(--danger);
+      font-weight: 600;
+      line-height: 1.7;
+    }
+
+    .toast-stack {
+      position: fixed;
+      top: 18px;
+      right: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      z-index: 1100;
+    }
+
+    .toast-item {
+      min-width: 260px;
+      max-width: 360px;
+      border-radius: 14px;
+      padding: 12px 14px;
+      color: white;
+      font-weight: 700;
+      box-shadow: 0 18px 34px rgba(15,23,42,0.18);
+      opacity: 0;
+      transform: translateX(16px);
+      transition: all 0.2s ease;
+    }
+
+    .toast-item.visible { opacity: 1; transform: translateX(0); }
+    .toast-item.success { background: linear-gradient(135deg, #0f9f6e, #22c55e); }
+    .toast-item.error { background: linear-gradient(135deg, #991b1b, #ef4444); }
+    .toast-item.warning { background: linear-gradient(135deg, #92400e, #f59e0b); }
+
+    @media (max-width: 900px) {
+      .lookup-panel { grid-template-columns: 1fr; }
+      .primary-btn { width: 100%; }
+      .stat-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .content-grid { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 560px) {
+      .page-shell { width: min(100% - 18px, 1120px); }
+      .topbar { margin-bottom: 18px; }
+      .brand { font-size: 0.95rem; }
+      .action-chip { padding: 9px 12px; }
+      .lookup-panel { padding: 14px; }
+      .field input { height: 52px; }
+      .primary-btn { height: 52px; }
+      .stat-grid { grid-template-columns: 1fr; }
+      .result-top { flex-direction: column; }
+      .product-item { grid-template-columns: 56px 1fr; }
+      .product-price { grid-column: 2; text-align: left; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="toast-stack" id="toastStack"></div>
+
+  <div class="page-shell">
+    <div class="topbar">
+      <a href="/landing/" class="brand">
+        <span class="brand-mark"><i class="fa-solid fa-notes-medical"></i></span>
+        <span>Business Name</span>
+      </a>
+      <a href="/landing/" class="action-chip">Back to shop</a>
+    </div>
+
+    <div class="track-card">
+      <div class="track-card-inner">
+        <div class="eyebrow">Order tracking</div>
+        <h1>Track Your Order</h1>
+        <p class="subtitle">Enter your invoice number and the customer name used when placing the order to see the latest status, delivery details, and order summary.</p>
+
+        <div class="lookup-panel" id="lookupPanel">
+          <div class="field">
+            <label for="invoiceNumber"><span class="icon-wrap"><i class="fa-solid fa-file-invoice"></i></span>Invoice Number</label>
+            <input id="invoiceNumber" type="text" placeholder="INV-2026-001245" autocomplete="off" />
+          </div>
+          <div class="field">
+            <label for="customerName"><span class="icon-wrap"><i class="fa-solid fa-user"></i></span>Customer Name</label>
+            <input id="customerName" type="text" placeholder="Enter the name used when placing the order" autocomplete="name" />
+          </div>
+          <button id="lookupBtn" class="primary-btn" type="button">Track My Order</button>
+        </div>
+
+        <div class="result-shell" id="resultShell">
+          <div class="result-top">
+            <div>
+              <div class="result-kicker">Order found</div>
+              <h2 class="result-title">Invoice: <span id="invoiceHeader">—</span></h2>
+            </div>
+            <div class="success-badge"><i class="fa-solid fa-circle-check"></i> Verified customer order</div>
+          </div>
+
+          <div class="stat-grid">
+            <div class="stat-card">
+              <div class="stat-label">Current status</div>
+              <div id="statusPill" class="pill"></div>
+              <div id="currentStatusText" class="stat-value">—</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Payment</div>
+              <div id="paymentPill" class="pill"></div>
+              <div id="paymentStatusText" class="stat-value">—</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Customer</div>
+              <div class="pill pending">Verified</div>
+              <div id="customerNameText" class="stat-value">—</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Order</div>
+              <div class="pill pending">Reference</div>
+              <div id="orderNumberText" class="stat-value">—</div>
+            </div>
+          </div>
+
+          <div class="content-grid">
+            <div class="panel">
+              <h3 class="panel-title">Order status timeline</h3>
+              <div class="timeline" id="timeline"></div>
+            </div>
+
+            <div class="panel status-summary">
+              <div class="status-live">
+                <div class="status-label">Current status</div>
+                <div id="liveStatus" class="current-status">—</div>
+                <div id="statusMessage" class="status-copy">Your order status will appear here once verified.</div>
+              </div>
+
+              <div class="delivery-box">
+                <div class="meta-row"><span>Expected delivery</span><strong id="expectedDelivery">—</strong></div>
+                <div class="meta-row"><span>Tracking number</span><strong id="trackingNumber">—</strong></div>
+                <div class="meta-row"><span>Carrier</span><strong id="carrierName">—</strong></div>
+                <div class="meta-row"><span>Shipping method</span><strong id="shippingMethod">—</strong></div>
+                <div class="meta-row"><span>Order date</span><strong id="orderDate">—</strong></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="orders-panel panel">
+            <h3 class="panel-title">Order items</h3>
+            <div class="product-list" id="itemsList"></div>
+            <div class="totals" id="totalsBlock"></div>
+          </div>
+
+          <div class="actions-row">
+            <button class="primary-btn" id="refreshBtn" type="button">Refresh Status</button>
+            <button class="secondary-btn" id="searchAgainBtn" type="button">Track Another Order</button>
+          </div>
+        </div>
+
+        <div id="errorBox" class="error-box" style="display:none; margin-top: 22px;">
+          We couldn't verify this order.<br />Please check your invoice number and customer name and try again.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const lookupBtn = document.getElementById('lookupBtn');
+    const refreshBtn = document.getElementById('refreshBtn');
+    const searchAgainBtn = document.getElementById('searchAgainBtn');
+    const resultShell = document.getElementById('resultShell');
+    const errorBox = document.getElementById('errorBox');
+    const invoiceInput = document.getElementById('invoiceNumber');
+    const nameInput = document.getElementById('customerName');
+    const toastStack = document.getElementById('toastStack');
+
+    function showToast(message, type = 'success') {
+      const toast = document.createElement('div');
+      toast.className = `toast-item ${type}`;
+      toast.textContent = message;
+      toastStack.appendChild(toast);
+      setTimeout(() => toast.classList.add('visible'), 20);
+      setTimeout(() => {
+        toast.classList.remove('visible');
+        setTimeout(() => toast.remove(), 200);
+      }, 3200);
+    }
+
+    function formatMoney(value) {
+      return `£${Number(value || 0).toFixed(2)}`;
+    }
+
+    function formatDate(value) {
+      if (!value) return '—';
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return value;
+      return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+    }
+
+    function statusClass(text) {
+      const normalized = String(text || '').trim().toLowerCase();
+      if (normalized.includes('delivered')) return 'delivered';
+      if (normalized.includes('shipped') || normalized.includes('in transit') || normalized.includes('out for delivery')) return 'shipped';
+      if (normalized.includes('processing') || normalized.includes('confirmed') || normalized.includes('packed')) return 'processing';
+      if (normalized.includes('cancelled')) return 'cancelled';
+      return 'pending';
+    }
+
+    function renderTimeline(orderStatus) {
+      const statuses = [
+        { label: 'Order Placed', key: 'placed' },
+        { label: 'Order Confirmed', key: 'confirmed' },
+        { label: 'Processing', key: 'processing' },
+        { label: 'Shipped', key: 'shipped' },
+        { label: 'Out for Delivery', key: 'out_for_delivery' },
+        { label: 'Delivered', key: 'delivered' }
+      ];
+
+      const normalized = String(orderStatus || '').trim().toLowerCase();
+      const activeIndex = statuses.findIndex((status) => normalized.includes(status.key.replace(/_/g, ' ')) || normalized.includes(status.key));
+      const currentIndex = activeIndex >= 0 ? activeIndex : 0;
+
+      const timeline = document.getElementById('timeline');
+      timeline.innerHTML = statuses.map((state, index) => {
+        let stateClass = 'upcoming';
+        if (index < currentIndex) stateClass = 'complete';
+        if (index === currentIndex) stateClass = 'current';
+
+        const completeMark = stateClass === 'complete' ? '<i class="fa-solid fa-check"></i>' : index + 1;
+
+        return `
+          <div class="timeline-item ${stateClass}">
+            <div class="timeline-dot">${completeMark}</div>
+            <div class="timeline-copy">
+              <strong>${state.label}</strong>
+              <span>${index < currentIndex ? 'Completed' : index === currentIndex ? 'Current step' : 'Upcoming'}</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function setLoading(isLoading) {
+      lookupBtn.disabled = isLoading;
+      lookupBtn.textContent = isLoading ? 'Finding Your Order...' : 'Track My Order';
+      refreshBtn.disabled = isLoading;
+      if (isLoading) {
+        refreshBtn.textContent = 'Finding Your Order...';
+      } else {
+        refreshBtn.textContent = 'Refresh Status';
+      }
+    }
+
+    function hideResult() {
+      resultShell.style.display = 'none';
+      errorBox.style.display = 'none';
+    }
+
+    async function lookupOrder() {
+      const invoiceNumber = invoiceInput.value.trim();
+      const customerName = nameInput.value.trim();
+
+      if (!invoiceNumber || !customerName) {
+        errorBox.style.display = 'block';
+        errorBox.innerHTML = 'We couldn\'t verify this order.<br />Please check your invoice number and customer name and try again.';
+        resultShell.style.display = 'none';
+        return;
+      }
+
+      setLoading(true);
+      hideResult();
+
+      try {
+        const params = new URLSearchParams({
+          invoiceNumber,
+          customerName
+        });
+
+        const response = await fetch(`/api/public/track-order?${params.toString()}`);
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
+          throw new Error(data.error || 'We couldn\'t verify this order. Please check your invoice number and customer name and try again.');
+        }
+
+        const { order, invoice, items, status } = data;
+        const customerDisplay = data.customer_name || order.customer_name || 'Customer';
+        const statusText = String(status.order_status || order.status || 'Pending');
+        const paymentText = String(status.payment_status || invoice.payment_status || 'Unpaid');
+        const deliveryText = String(status.delivery_status || invoice.delivery_status || 'Pending');
+
+        document.getElementById('invoiceHeader').textContent = invoice.invoice_number || '—';
+        document.getElementById('statusPill').className = `pill ${statusClass(statusText)}`;
+        document.getElementById('statusPill').textContent = statusText;
+        document.getElementById('currentStatusText').textContent = statusText;
+        document.getElementById('paymentPill').className = `pill ${statusClass(paymentText)}`;
+        document.getElementById('paymentPill').textContent = paymentText;
+        document.getElementById('paymentStatusText').textContent = paymentText;
+        document.getElementById('customerNameText').textContent = customerDisplay;
+        document.getElementById('orderNumberText').textContent = order.order_number || '—';
+
+        document.getElementById('liveStatus').textContent = statusText;
+        document.getElementById('statusMessage').textContent = statusText === 'Delivered'
+          ? 'Your order has been delivered successfully.'
+          : statusText === 'Shipped' || statusText === 'In Transit' || statusText === 'Out for Delivery'
+            ? 'Your order is on its way and will continue to update as it moves.'
+            : 'Your order is being processed and we will update it as soon as there is progress.';
+
+        document.getElementById('expectedDelivery').textContent = invoice.expected_arrival_date ? formatDate(invoice.expected_arrival_date) : 'Your delivery date will be updated once shipping information becomes available.';
+        document.getElementById('trackingNumber').textContent = invoice.dispatch_number || '—';
+        document.getElementById('carrierName').textContent = '—';
+        document.getElementById('shippingMethod').textContent = order.delivery_address ? 'Standard delivery' : '—';
+        document.getElementById('orderDate').textContent = formatDate(order.created_at || invoice.invoice_date);
+
+        renderTimeline(statusText);
+
+        const itemsList = document.getElementById('itemsList');
+        itemsList.innerHTML = (items || []).map((item) => `
+          <div class="product-item">
+            <div class="product-thumb">${String(item.product_name || 'P').slice(0, 1).toUpperCase()}</div>
+            <div>
+              <div class="product-name">${item.product_brand || 'Product'}</div>
+              <div class="product-meta">${item.product_name || 'Item'}${item.product_description ? '<br>' + item.product_description : ''}<br>Qty: ${item.quantity || 0}</div>
+            </div>
+            <div class="product-price">${formatMoney(item.line_total || item.unit_price || 0)}</div>
+          </div>
+        `).join('') || '<div class="product-meta">No order items available.</div>';
+
+        const subtotal = Number(invoice.subtotal || 0);
+        const tax = Number(invoice.tax || 0);
+        const total = Number(invoice.total || order.order_total || 0);
+        const paid = Number(invoice.paid_amount || 0);
+        document.getElementById('totalsBlock').innerHTML = `
+          <div class="totals-row"><span>Subtotal</span><strong>${formatMoney(subtotal)}</strong></div>
+          <div class="totals-row"><span>Shipping</span><strong>${formatMoney(0)}</strong></div>
+          <div class="totals-row"><span>Discount</span><strong>${formatMoney(0)}</strong></div>
+          <div class="totals-row"><span>Tax</span><strong>${formatMoney(tax)}</strong></div>
+          <div class="totals-row total"><span>Total</span><strong>${formatMoney(total)}</strong></div>
+          <div class="totals-row"><span>Paid</span><strong>${formatMoney(paid)}</strong></div>
+        `;
+
+        resultShell.style.display = 'block';
+        errorBox.style.display = 'none';
+        showToast('Order verified successfully.', 'success');
+      } catch (error) {
+        errorBox.style.display = 'block';
+        errorBox.innerHTML = error.message || 'We couldn\'t verify this order.<br />Please check your invoice number and customer name and try again.';
+        resultShell.style.display = 'none';
+        showToast(error.message || 'Unable to verify this order.', 'error');
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    lookupBtn.addEventListener('click', lookupOrder);
+    refreshBtn.addEventListener('click', lookupOrder);
+    searchAgainBtn.addEventListener('click', () => {
+      resultShell.style.display = 'none';
+      errorBox.style.display = 'none';
+      invoiceInput.value = '';
+      nameInput.value = '';
+      invoiceInput.focus();
+    });
+
+    invoiceInput.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter') lookupOrder();
+    });
+
+    nameInput.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter') lookupOrder();
+    });
+  </script>
+</body>
+</html>
